@@ -9,9 +9,6 @@ import EmailProvider from "next-auth/providers/email";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { env } from "src/env.mjs";
 import { prisma } from "./db";
-import type { Workspace } from ".prisma/client";
-import { api } from "src/utils/api";
-import { createTRPCContext } from "./api/trpc";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -25,13 +22,13 @@ declare module "next-auth" {
       id: string;
       // ...other properties
       // role: UserRole;
-      activeWorkspace: Workspace; // Might need fix
+      activeWorkspaceId: string; // Might need fix
     } & DefaultSession["user"];
   }
 
   interface User {
     // ...other properties
-    activeWorkspace: Workspace; // Might need fix
+    activeWorkspaceId: string; // Might need fix
   }
 }
 
@@ -42,18 +39,10 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   callbacks: {
-    async session({ session, user }) {
-      const ctx = await createTRPCContext();
-      const caller = appRouter.createCaller(ctx);
-
-      const activeWorkspace = api.workspace.getActiveWorkspace.useQuery({
-        userId: user.id,
-      });
-      if (!activeWorkspace.data) throw new Error("No Active Workspace Found");
-
+    session({ session, user }) {
       if (session.user) {
         session.user.id = user.id;
-        session.user.activeWorkspace = activeWorkspace.data; // Might need fix
+        session.user.activeWorkspaceId = user.activeWorkspaceId; // Might need fix
       }
       return session;
     },
