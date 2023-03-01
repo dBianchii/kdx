@@ -4,10 +4,14 @@ import {
   type NextAuthOptions,
   type DefaultSession,
 } from "next-auth";
-import DiscordProvider from "next-auth/providers/discord";
+import GoogleProvider from "next-auth/providers/google";
+import EmailProvider from "next-auth/providers/email";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { env } from "server/env.mjs";
-import { prisma } from "server/server/db";
+import { env } from "src/env.mjs";
+import { prisma } from "./db";
+import type { Workspace } from ".prisma/client";
+import { api } from "src/utils/api";
+import { createTRPCContext } from "./api/trpc";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -21,13 +25,14 @@ declare module "next-auth" {
       id: string;
       // ...other properties
       // role: UserRole;
+      activeWorkspace: Workspace; // Might need fix
     } & DefaultSession["user"];
   }
 
-  // interface User {
-  //   // ...other properties
-  //   // role: UserRole;
-  // }
+  interface User {
+    // ...other properties
+    activeWorkspace: Workspace; // Might need fix
+  }
 }
 
 /**
@@ -37,19 +42,38 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   callbacks: {
-    session({ session, user }) {
+    async session({ session, user }) {
+      const ctx = await createTRPCContext();
+      const caller = appRouter.createCaller(ctx);
+
+      const activeWorkspace = api.workspace.getActiveWorkspace.useQuery({
+        userId: user.id,
+      });
+      if (!activeWorkspace.data) throw new Error("No Active Workspace Found");
+
       if (session.user) {
         session.user.id = user.id;
-        // session.user.role = user.role; <-- put other properties on the session here
+        session.user.activeWorkspace = activeWorkspace.data; // Might need fix
       }
       return session;
     },
   },
   adapter: PrismaAdapter(prisma),
   providers: [
-    DiscordProvider({
-      clientId: env.DISCORD_CLIENT_ID,
-      clientSecret: env.DISCORD_CLIENT_SECRET,
+    GoogleProvider({
+      clientId: env.GOOGLE_CLIENT_ID,
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
+    }),
+    EmailProvider({
+      server: {
+        host: env.EMAIL_SERVER_HOST,
+        port: env.EMAIL_SERVER_PORT,
+        auth: {
+          user: env.EMAIL_SERVER_USER,
+          pass: env.EMAIL_SERVER_PASSWORD,
+        },
+      },
+      from: env.EMAIL_FROM,
     }),
     /**
      * ...add more providers here.
@@ -61,6 +85,14 @@ export const authOptions: NextAuthOptions = {
      * @see https://next-auth.js.org/providers/github
      */
   ],
+  secret: env.NEXTAUTH_SECRET,
+  pages: {
+    signIn: "/auth/signIn",
+    //signOut: '/auth/signout',
+    //error: '/auth/error', // Error code passed in query string as ?error=
+    //verifyRequest: '/auth/verify-request', // (used for check email message)
+    //newUser: "/auth/new-user", // New users will be directed here on first sign in (leave the property out if not of interest)
+  },
 };
 
 /**
