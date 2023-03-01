@@ -94,7 +94,7 @@ const WorkspacesTable = ({ session }: SessionProps) => {
             <tr
               key={workspace.id}
               className={
-                workspace.id == session.user?.activeWorkspace.id
+                workspace.id == session.user?.activeWorkspaceId
                   ? "bg-gray-200"
                   : ""
               }
