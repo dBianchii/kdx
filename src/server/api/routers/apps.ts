@@ -29,7 +29,7 @@ export const appsRouter = createTRPCRouter({
     const _apps: AppWithInstalled[] = apps.map((app) => {
       let installed = false;
       app.activeWorkspaces.forEach((workspace) => {
-        if (workspace.id === ctx.session.user.activeWorkspace.id) {
+        if (workspace.id === ctx.session.user.activeWorkspaceId) {
           installed = true;
           console.log("object");
         }
@@ -47,7 +47,7 @@ export const appsRouter = createTRPCRouter({
       where: {
         activeWorkspaces: {
           some: {
-            id: ctx.session.user.activeWorkspace.id,
+            id: ctx.session.user.activeWorkspaceId,
           },
         },
       },
