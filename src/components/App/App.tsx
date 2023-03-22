@@ -17,8 +17,8 @@ const KodixApp: React.FC<Props> = ({
         width={20}
         height={20}
         className="mx-auto mb-3 h-20 w-20 rounded-full shadow-lg"
-        src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=880&q=80"
-        alt="product designer"
+        src="https://pbs.twimg.com/media/EaZSuXXXkAAMtJ5?format=jpg&name=small"
+        alt="app"
       />
       <h1 className="text-lg text-gray-200">{appName}</h1>
       <p className="mt-4 text-xs text-gray-400">{appDescription}</p>
