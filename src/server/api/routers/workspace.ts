@@ -3,23 +3,19 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const workspaceRouter = createTRPCRouter({
-  getAll: protectedProcedure
-    .input(z.object({ userId: z.string().cuid() }).nullish())
-    .query(async ({ ctx, input }) => {
-      if (!input?.userId) return await ctx.prisma.workspace.findMany();
-
-      const workspaces = await ctx.prisma.workspace.findMany({
-        where: {
-          users: {
-            some: {
-              id: input.userId,
-            },
+  getAllForLoggedUser: protectedProcedure.query(async ({ ctx }) => {
+    const workspaces = await ctx.prisma.workspace.findMany({
+      where: {
+        users: {
+          some: {
+            id: ctx.session.user.id,
           },
         },
-      });
+      },
+    });
 
-      return workspaces;
-    }),
+    return workspaces;
+  }),
   create: protectedProcedure
     .input(z.object({ userId: z.string().cuid(), workspaceName: z.string() }))
     .mutation(async ({ ctx, input }) => {

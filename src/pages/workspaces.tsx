@@ -15,7 +15,7 @@ const Workspaces = () => {
   const ctx = api.useContext();
   const { mutate } = api.workspace.create.useMutation({
     onSuccess: () => {
-      void ctx.workspace.getAll.invalidate();
+      void ctx.workspace.getAllForLoggedUser.invalidate();
     },
   });
 
@@ -65,7 +65,7 @@ const WorkspacesTable = ({ session }: SessionProps) => {
     return <></>;
   }
 
-  const result = api.workspace.getAll.useQuery({
+  const result = api.workspace.getAllForLoggedUser.useQuery({
     userId: session?.user?.id,
   });
 
