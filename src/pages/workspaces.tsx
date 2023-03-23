@@ -65,8 +65,8 @@ const WorkspacesTable = ({ session }: SessionProps) => {
     return <></>;
   }
 
-  const result = api.workspace.getAllForLoggedUser.useQuery({
-    userId: session?.user?.id,
+  const result = api.workspace.getAllForLoggedUser.useQuery(undefined, {
+    enabled: session?.user !== undefined,
   });
 
   const { mutateAsync } = api.user.switchActiveWorkspace.useMutation();
