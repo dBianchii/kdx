@@ -3,6 +3,8 @@ import Button from "@ui/Button";
 import { api } from "src/utils/api";
 
 import { useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 
 export default function Todo() {
   const [inputTitle, setInputTitle] = useState<string>("");
@@ -10,6 +12,12 @@ export default function Todo() {
   const [inputPriority, setInputPriority] = useState<number>(0);
   const [inputDueDate, setInputDueDate] = useState<Date>(new Date());
   const [inputReminder, setInputReminder] = useState<boolean>(false);
+
+  const router = useRouter();
+  const { data: session } = useSession();
+  if (!session) {
+    if (session) void router.push("/");
+  }
 
   const { data } = api.todo.getAllForLoggedUser.useQuery(undefined);
 
