@@ -5,6 +5,7 @@ import { api } from "src/utils/api";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import { useEffect } from "react";
 
 export default function Todo() {
   const [inputTitle, setInputTitle] = useState<string>("");
@@ -15,9 +16,12 @@ export default function Todo() {
 
   const router = useRouter();
   const { data: session } = useSession();
-  if (!session) {
-    if (session) void router.push("/");
-  }
+
+  useEffect(() => {
+    if (!session) {
+      void router.push("/");
+    }
+  });
 
   const { data } = api.todo.getAllForLoggedUser.useQuery(undefined);
 
