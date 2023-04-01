@@ -21,8 +21,9 @@ model Workspace {
 	createdAt  DateTime @default(now())
 	updatedAt  DateTime @updatedAt
 	users       User[]   @relation("UserWorkspace")
-  activeUsers User[]   @relation("UserActiveWorkspace")
-  activeApps  App[]
+	activeUsers User[]   @relation("UserActiveWorkspace")
+	activeApps  App[]
+	Todo Todo[]
 }
 
 model App {
@@ -92,6 +93,7 @@ model User {
 	accounts      		Account[]
 	sessions      		Session[]
 	workspaces     		Workspace[]  @relation("UserWorkspace")
+	Todo 				Todo[]
   activeWorkspaceId String?  @map("activeWorkspaceId")
   activeWorkspace  	Workspace? @relation("UserActiveWorkspace", fields: [activeWorkspaceId], references: [id])
 
@@ -104,4 +106,36 @@ model VerificationToken {
 	expires    DateTime
 
 	@@unique([identifier, token])
+}
+
+enum Priority {
+	LOW
+	MEDIUM
+	HIGH
+} 
+
+enum Status {
+	COMPLETED
+	INPROGRESS
+	PENDING
+} 
+
+model Todo {
+	id            		String    @id @default(cuid())
+	title          		String
+	description        	String?
+	dueDate      		DateTime?
+	priority			Priority?        //  1 low, 2 medium, or 3 high. (h / l / m)
+	category 			String?
+	status				Status?          // "completed", "in progress", or "pending".
+	reminder			Boolean?
+
+	userId				String
+	user        	    User @relation(fields: [userId], references: [id])
+
+	workspaceId 		String
+	workspace			Workspace @relation(fields: [workspaceId], references: [id])
+
+	@@index([workspaceId])
+	@@index([userId])
 }

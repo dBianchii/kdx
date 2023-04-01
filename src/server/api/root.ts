@@ -4,6 +4,7 @@ import { authRouter } from "../api/routers/auth";
 import { technologyRouter } from "../api/routers/technology";
 import { userRouter } from "../api/routers/user";
 import { workspaceRouter } from "../api/routers/workspace";
+import { todoRouter } from "../api/routers/todo";
 
 /**
  * This is the primary router for your server.
@@ -16,6 +17,7 @@ export const appRouter = createTRPCRouter({
   technology: technologyRouter,
   user: userRouter,
   workspace: workspaceRouter,
+  todo: todoRouter
 });
 
 // export type definition of API
