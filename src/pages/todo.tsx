@@ -2,10 +2,9 @@ import Button from "@ui/Button";
 
 import { api } from "src/utils/api";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
 
 export default function Todo() {
   const [inputTitle, setInputTitle] = useState<string>("");
@@ -14,11 +13,11 @@ export default function Todo() {
   const [inputDueDate, setInputDueDate] = useState<Date>(new Date());
   const [inputReminder, setInputReminder] = useState<boolean>(false);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { data: session, status } = useSession();
   const router = useRouter();
-  const { data: session } = useSession();
-
   useEffect(() => {
-    if (!session) {
+    if (status == "unauthenticated") {
       void router.push("/");
     }
   });
