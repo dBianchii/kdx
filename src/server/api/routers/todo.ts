@@ -1,16 +1,18 @@
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
-import type {prisma} from "../../db"
-
-
 export const todoRouter = createTRPCRouter({
-
   create: protectedProcedure
-    .input(z.object({ title: z.string(), description: z.string().nullish(), dueDate: z.date(), reminder: z.boolean()  }))
-    .mutation(async ({ ctx, input }) => { 
-
+    .input(
+      z.object({
+        title: z.string(),
+        description: z.string().nullish(),
+        dueDate: z.date(),
+        reminder: z.boolean(),
+        priority: z.number().nullish(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
       const todo = await ctx.prisma.todo.create({
         data: {
           title: input.title,
@@ -19,12 +21,20 @@ export const todoRouter = createTRPCRouter({
           reminder: input.reminder,
           userId: ctx.session.user.id,
           workspaceId: ctx.session.user.activeWorkspaceId,
-          priority: "LOW"
+          priority: input.priority,
         },
+      });
 
-      })
-      return todo.id
+      return todo.id;
     }),
-  
-  
+  getAllForLoggedUser: protectedProcedure.query(async ({ ctx }) => {
+    const todos = await ctx.prisma.todo.findMany({
+      where: {
+        userId: ctx.session.user.id,
+        workspaceId: ctx.session.user.activeWorkspaceId,
+      },
+    });
+
+    return todos;
+  }),
 });
