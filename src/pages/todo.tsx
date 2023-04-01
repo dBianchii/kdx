@@ -20,7 +20,7 @@ export default function Todo() {
     if (status == "unauthenticated") {
       void router.push("/");
     }
-  });
+  }, [status, router]);
 
   const { data } = api.todo.getAllForLoggedUser.useQuery(undefined);
 
