@@ -18,6 +18,7 @@ export default function Marketplace() {
         {data.data.map((app: App) => (
           <div key={app.id}>
             <AppComponent
+              id={app.id}
               appName={app.name}
               appDescription={app.description}
               installed={false}

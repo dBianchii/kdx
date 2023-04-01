@@ -35,6 +35,8 @@ model App {
 	activeWorkspaces Workspace[]
 	idpartnerDev     DevPartner  @relation(fields: [devPartnerId], references: [id])
 	devPartnerId     String
+
+	@@index([devPartnerId])
 }
 
 model DevPartner {
@@ -68,6 +70,7 @@ model Account {
 	user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
 	@@unique([provider, providerAccountId])
+	@@index([userId])
 }
 
 model Session {
@@ -76,6 +79,8 @@ model Session {
 	userId       String
 	expires      DateTime
 	user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+	@@index([userId])
 }
 
 model User {
@@ -89,6 +94,8 @@ model User {
 	workspaces     		Workspace[]  @relation("UserWorkspace")
   activeWorkspaceId String?  @map("activeWorkspaceId")
   activeWorkspace  	Workspace? @relation("UserActiveWorkspace", fields: [activeWorkspaceId], references: [id])
+
+  @@index([activeWorkspaceId])
 }
 
 model VerificationToken {

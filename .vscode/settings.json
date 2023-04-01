@@ -1,0 +1,13 @@
+{
+  "sqltools.connections": [
+    {
+      "mysqlOptions": {
+        "authProtocol": "default"
+      },
+      "previewLimit": 50,
+      "driver": "MySQL",
+      "name": "KodixDB",
+      "connectString": "mysql://rph76ox9mkrnotltp4ml:pscale_pw_rcFsvOu9CoVioG1tzVKmSMivFi5C9UZIdC9z4BEYjZT@aws-sa-east-1.connect.psdb.cloud/kodix?ssl={\"rejectUnauthorized\":true}"
+    }
+  ]
+}
