@@ -17,9 +17,11 @@ export default function Apps() {
       <div className="mx-10 my-4">
         {data.data.map((app: App) => (
           <div key={app.id}>
-            <AppComponent
+            <AppComponent 
+              id = {app.id}
               appName={app.name}
               appDescription={app.description}
+              appUrl={app.urlApp}
               installed={true}
             />
           </div>

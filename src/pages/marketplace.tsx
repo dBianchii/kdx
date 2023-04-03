@@ -2,8 +2,14 @@ import type { App } from "@prisma/client";
 import AppComponent from "../components/App/App";
 import { api } from "../utils/api";
 
+export interface AppWithInstalled extends App {
+  installed: boolean;
+}
+
 export default function Marketplace() {
-  const data = api.app.getAll.useQuery();
+  //const data = api.app.getAll.useQuery();
+  const data = api.app.getAllWithInstalled.useQuery();
+
   if (data.isLoading) {
     return <div>Loading...</div>;
   }
@@ -12,16 +18,20 @@ export default function Marketplace() {
     return <div>Error</div>;
   }
 
+  
   return (
     <div className="flex min-h-screen flex-row bg-gradient-to-b from-[#2e026d] to-[#15162c]">
       <div className="mx-10 my-4">
-        {data.data.map((app: App) => (
+        {data.data.map((app: AppWithInstalled) => (
           <div key={app.id}>
             <AppComponent
               id={app.id}
               appName={app.name}
               appDescription={app.description}
-              installed={false}
+              appUrl={app.urlApp}
+              
+              //installed={false}
+              installed={app.installed} 
             />
           </div>
         ))}

@@ -14,7 +14,7 @@ datasource db {
 	url      = env("DATABASE_URL")
 	relationMode = "prisma"
 }
-
+  
 model Workspace {
 	id         String   @id @default(cuid())
 	name       String
@@ -22,7 +22,7 @@ model Workspace {
 	updatedAt  DateTime @updatedAt
 	users       User[]   @relation("UserWorkspace")
 	activeUsers User[]   @relation("UserActiveWorkspace")
-	activeApps  App[]
+	activeApps  App[]    @relation("AppWorkspace")
 	Todo Todo[]
 }
 
@@ -33,9 +33,10 @@ model App {
 	createdAt        DateTime    @default(now())
 	updatedAt        DateTime    @updatedAt
 	subscriptionCost Decimal
-	activeWorkspaces Workspace[]
+	activeWorkspaces Workspace[] @relation("AppWorkspace")
 	idpartnerDev     DevPartner  @relation(fields: [devPartnerId], references: [id])
 	devPartnerId     String
+	urlApp			 String      @default("")
 
 	@@index([devPartnerId])
 }
