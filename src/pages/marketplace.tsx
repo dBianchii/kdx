@@ -18,7 +18,6 @@ export default function Marketplace() {
     return <div>Error</div>;
   }
 
-  
   return (
     <div className="flex min-h-screen flex-row bg-gradient-to-b from-[#2e026d] to-[#15162c]">
       <div className="mx-10 my-4">
@@ -29,9 +28,7 @@ export default function Marketplace() {
               appName={app.name}
               appDescription={app.description}
               appUrl={app.urlApp}
-              
-              //installed={false}
-              installed={app.installed} 
+              installed={app.installed}
             />
           </div>
         ))}
