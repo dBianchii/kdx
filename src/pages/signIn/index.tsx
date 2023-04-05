@@ -1,51 +1,17 @@
-import {
-  signIn,
-  getProviders,
-  type LiteralUnion,
-  type ClientSafeProvider,
-  useSession,
-  type SignInOptions,
-} from "next-auth/react";
-import type { BuiltInProviderType } from "next-auth/providers";
+import { signIn, getProviders, useSession } from "next-auth/react";
 import { FcGoogle } from "react-icons/fc";
-import { useEffect, useState } from "react";
 import Button from "@ui/Button";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import type { InferGetStaticPropsType } from "next";
+import { useState } from "react";
 
-const SignIn = () => {
-  const signInOptions: SignInOptions = {
-    email: "",
-    callbackUrl: "/",
-  };
-  const [email, setEmail] = useState(signInOptions);
-  const handleEmail = (emailString: string) => {
-    const signInOptions: SignInOptions = {
-      email: emailString,
-      callbackUrl: "/",
-    };
-    setEmail(signInOptions);
-  };
-
-  const [providers, setproviders] = useState<Record<
-    LiteralUnion<BuiltInProviderType, string>,
-    ClientSafeProvider
-  > | null>();
-
-  useEffect(() => {
-    const setTheProviders = async () => {
-      const setupProviders = await getProviders();
-      setproviders(setupProviders);
-    };
-
-    setTheProviders().catch((error) => {
-      throw error;
-    });
-  }, []);
-
+function SignIn({ providers }: InferGetStaticPropsType<typeof getStaticProps>) {
   const { data: session } = useSession();
   const router = useRouter();
   if (session) void router.push("/");
+
+  const [email, setEmail] = useState("");
 
   return (
     <section className="bg-gray">
@@ -72,14 +38,16 @@ const SignIn = () => {
                     type="email"
                     name="email"
                     id="email"
-                    onChange={(e) => handleEmail(e.target.value)}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="focus:ring-primary-600 focus:border-primary-600 block w-full rounded-md border border-gray-300 bg-gray-50 p-2.5 text-gray-900 sm:text-sm"
                     placeholder="name@company.com"
                   />
                 </div>
                 <Button
                   intent="primary"
-                  onClick={() => void signIn(providers.email.id, email)}
+                  onClick={() =>
+                    void signIn("email", { email, callbackUrl: "/" })
+                  }
                   fullWidth={true}
                 >
                   Sign In
@@ -92,9 +60,7 @@ const SignIn = () => {
                 <Button
                   intent="secondary"
                   fullWidth={true}
-                  onClick={() =>
-                    void signIn(providers.google.id, { callbackUrl: "/" })
-                  }
+                  onClick={() => void signIn("google", { callbackUrl: "/" })}
                 >
                   <FcGoogle className="inline" /> Login With Google
                 </Button>
@@ -105,5 +71,15 @@ const SignIn = () => {
       </div>
     </section>
   );
+}
+
+export const getStaticProps = async () => {
+  const providers = await getProviders();
+  return {
+    props: {
+      providers,
+    },
+  };
 };
+
 export default SignIn;
