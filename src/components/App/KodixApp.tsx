@@ -19,18 +19,12 @@ const KodixApp: React.FC<Props> = ({
 }) => {
   const router = useRouter();
 
-  function install(appId: string) {
-    //const { mutate } = api.app.installApp.useMutation();
-    //mutate({ appId });
-  }
-
-  function openApp(appUrl: string) {
-    //alert("Not implemented" + appUrl);
-    const baseUrl = window.location.origin; // obter a raiz da URL atual
-    //appUrl = "/todo";
-    const newUrl = baseUrl + appUrl; // concatenar com a variável appURL
-    window.open(newUrl, "_self"); // abrir em uma nova aba
-  }
+  const ctx = api.useContext();
+  const { mutate } = api.workspace.installApp.useMutation({
+    onSuccess: () => {
+      void ctx.app.getAllWithInstalled.invalidate();
+    },
+  });
 
   return (
     <div className="mb-4 max-w-sm rounded-3xl bg-gray-700 p-5 text-center font-semibold shadow-xl">
@@ -45,7 +39,9 @@ const KodixApp: React.FC<Props> = ({
       <p className="mt-4 text-xs text-gray-400">{appDescription}</p>
       <button
         onClick={
-          !installed ? () => void install(id) : () => router.push(appUrl)
+          !installed
+            ? () => void mutate({ appId: id })
+            : () => router.push(appUrl)
         }
         className="mt-8 rounded-3xl px-8 py-2 font-semibold tracking-wide text-gray-100 hover:bg-gray-600"
       >

@@ -87,4 +87,48 @@ export const workspaceRouter = createTRPCRouter({
 
       return user.activeWorkspace;
     }),
+  installApp: protectedProcedure
+    .input(
+      z.object({
+        appId: z.string().cuid(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const app = await ctx.prisma.app.findUnique({
+        where: {
+          id: input.appId,
+        },
+      });
+      if (!app)
+        throw new TRPCError({
+          message: "No App Found",
+          code: "NOT_FOUND",
+        });
+
+      const workspace = await ctx.prisma.workspace.findUnique({
+        where: {
+          id: ctx.session.user.activeWorkspaceId,
+        },
+      });
+      if (!workspace)
+        throw new TRPCError({
+          message: "No Workspace Found",
+          code: "NOT_FOUND",
+        });
+
+      const installedApp = await ctx.prisma.app.update({
+        where: {
+          id: input.appId,
+        },
+        data: {
+          activeWorkspaces: {
+            connect: {
+              id: workspace.id,
+            },
+          },
+        },
+      });
+
+      return installedApp;
+    }),
 });

@@ -1,29 +1,18 @@
-import type { App } from "@prisma/client";
-import AppComponent from "../components/App/App";
+import KodixApp from "../components/App/KodixApp";
 import { api } from "../utils/api";
-
-export interface AppWithInstalled extends App {
-  installed: boolean;
-}
 
 export default function Marketplace() {
   //const data = api.app.getAll.useQuery();
-  const data = api.app.getAllWithInstalled.useQuery();
-
-  if (data.isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!data.data) {
-    return <div>Error</div>;
-  }
+  const data = api.app.getAllWithInstalled.useQuery(undefined);
+  const loading = data.isLoading;
 
   return (
     <div className="flex min-h-screen flex-row bg-gradient-to-b from-[#2e026d] to-[#15162c]">
-      <div className="mx-10 my-4">
-        {data.data.map((app: AppWithInstalled) => (
+      {data.data &&
+        !loading &&
+        data.data.map((app) => (
           <div key={app.id}>
-            <AppComponent
+            <KodixApp
               id={app.id}
               appName={app.name}
               appDescription={app.description}
@@ -32,7 +21,6 @@ export default function Marketplace() {
             />
           </div>
         ))}
-      </div>
     </div>
   );
 }

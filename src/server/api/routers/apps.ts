@@ -14,7 +14,7 @@ export const appsRouter = createTRPCRouter({
   /**
    * Returns all apps, but with an extra boolean indicating if they are installed in the active workspace for the user
    */
-  getAllWithInstalled: protectedProcedure.query(async ({ ctx }) => {
+  getAllWithInstalled: publicProcedure.query(async ({ ctx }) => {
     const apps = await ctx.prisma.app.findMany({
       include: {
         activeWorkspaces: true,
@@ -29,9 +29,8 @@ export const appsRouter = createTRPCRouter({
     const _apps: AppWithInstalled[] = apps.map((app) => {
       let installed = false;
       app.activeWorkspaces.forEach((workspace) => {
-        if (workspace.id === ctx.session.user.activeWorkspaceId) {
+        if (workspace.id === ctx.session?.user.activeWorkspaceId) {
           installed = true;
-          console.log("object");
         }
       });
       return {
