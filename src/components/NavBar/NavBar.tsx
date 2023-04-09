@@ -7,10 +7,19 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
-import Button from "@ui/Button";
+import { Button } from "@ui/Button";
+import {
+  navigationMenuTriggerStyle,
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+} from "@ui/NavigationMenu";
+
 import { api } from "src/utils/api";
 import type { Session } from "next-auth";
 import classNames from "classnames";
+import React from "react";
 
 const callsToActionProfilePic = [
   //{ name: 'Settings', href: '#', icon: Cog6ToothIcon },
@@ -21,7 +30,7 @@ export default function NavBar() {
   const { data: session } = useSession();
 
   return (
-    <Popover className="relative bg-gray-800 shadow-xl">
+    <Popover className="relative bg-slate-900 shadow-lg">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="flex items-center justify-between py-6 md:justify-start md:space-x-10">
           <div className="flex justify-start lg:w-0 lg:flex-1">
@@ -37,20 +46,30 @@ export default function NavBar() {
             </Popover.Button>
           </div>
           <Popover.Group as="nav" className="hidden space-x-10 md:flex">
-            <Link
-              href="/marketplace"
-              className="text-base font-medium text-gray-200 hover:text-gray-300"
-            >
-              Marketplace
-            </Link>
-            {!!session && (
-              <Link
-                href="/apps"
-                className="text-base font-medium text-gray-200 hover:text-gray-300"
-              >
-                Apps
-              </Link>
-            )}
+            <NavigationMenu>
+              <NavigationMenuList>
+                <NavigationMenuItem>
+                  <Link href="/marketplace" legacyBehavior passHref>
+                    <NavigationMenuLink
+                      className={navigationMenuTriggerStyle()}
+                    >
+                      Marketplace
+                    </NavigationMenuLink>
+                  </Link>
+                </NavigationMenuItem>
+                {!!session && (
+                  <NavigationMenuItem>
+                    <Link href="/apps" legacyBehavior passHref>
+                      <NavigationMenuLink
+                        className={navigationMenuTriggerStyle()}
+                      >
+                        Apps
+                      </NavigationMenuLink>
+                    </Link>
+                  </NavigationMenuItem>
+                )}
+              </NavigationMenuList>
+            </NavigationMenu>
           </Popover.Group>
           <LoginOrUserProfile session={session} />
         </div>
@@ -80,7 +99,7 @@ function LoginOrUserProfile({ session }: LoginOrUserProfileProps) {
 
   return (
     <div className="hidden items-center justify-end md:flex md:flex-1 lg:w-0">
-      {!!session?.user?.id && (
+      {session?.user?.id && (
         <div>
           <Popover className="relative">
             {({ open }) => (
@@ -169,15 +188,14 @@ function LoginOrUserProfile({ session }: LoginOrUserProfileProps) {
         <div>
           <Link
             href="/signIn"
-            className="whitespace-nowrap text-base font-medium text-gray-500 hover:text-gray-900"
+            className="whitespace-nowrap text-base font-medium text-slate-500 hover:text-slate-600"
           >
             Sign in
           </Link>
-          <Link href="/signIn">
-            <Button intent="primary" className="mx-4">
-              Sign up
-            </Button>
-          </Link>
+
+          <Button asChild variant="subtle" className="mx-4">
+            <Link href="/signIn">Sign Up</Link>
+          </Button>
         </div>
       )}
     </div>

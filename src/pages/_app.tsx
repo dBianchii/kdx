@@ -7,7 +7,7 @@ import { api } from "../utils/api";
 import "../styles/globals.css";
 
 import NavBar from "../components/NavBar/NavBar";
-import { type ReactNode, Fragment } from "react";
+import { Fragment } from "react";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
@@ -22,19 +22,22 @@ const MyApp: AppType<{ session: Session | null }> = ({
 
   return (
     <SessionProvider session={session}>
-      <LayoutComponent>
+      <LayoutComponent className="h-fit bg-slate-800">
         <Component {...pageProps} />
       </LayoutComponent>
     </SessionProvider>
   );
 };
 
-function Layout({ children }: { children?: ReactNode }) {
+function Layout({
+  children,
+  className,
+}: React.AllHTMLAttributes<HTMLDivElement>) {
   return (
-    <>
+    <div className={className}>
       <NavBar />
       {children}
-    </>
+    </div>
   );
 }
 

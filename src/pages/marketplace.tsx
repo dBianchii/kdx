@@ -7,7 +7,7 @@ export default function Marketplace() {
   const loading = data.isLoading;
 
   return (
-    <div className="flex min-h-screen flex-row bg-gradient-to-b from-[#2e026d] to-[#15162c]">
+    <div className="flex min-h-screen flex-row">
       {data.data &&
         !loading &&
         data.data.map((app) => (

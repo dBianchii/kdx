@@ -6,7 +6,7 @@ export default function Apps() {
   const { data } = api.app.getInstalledApps.useQuery();
 
   return (
-    <div className="flex min-h-screen flex-row bg-gray-800 bg-gradient-to-b">
+    <div className="flex min-h-screen flex-row bg-gradient-to-b">
       <div className="mx-10 my-4">
         {data &&
           data.map((app: App) => (
