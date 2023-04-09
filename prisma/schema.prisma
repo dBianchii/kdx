@@ -55,6 +55,32 @@ model Technology {
   name String
 }
 
+enum Status {
+  COMPLETED
+  INPROGRESS
+  PENDING
+}
+
+model Todo {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  dueDate     DateTime?
+  priority    Int? //1 - LOW, 2 - MEDIUM, 3 high
+  category    String?
+  status      Status?
+  reminder    Boolean?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+
+  @@index([workspaceId])
+  @@index([userId])
+}
+
 // Necessary for Next auth
 model Account {
   id                String  @id @default(cuid())
@@ -107,30 +133,4 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
-}
-
-enum Status {
-  COMPLETED
-  INPROGRESS
-  PENDING
-}
-
-model Todo {
-  id          String    @id @default(cuid())
-  title       String
-  description String?
-  dueDate     DateTime?
-  priority    Int? //1 - LOW, 2 - MEDIUM, 3 high
-  category    String?
-  status      Status?
-  reminder    Boolean?
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-
-  workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id])
-
-  @@index([workspaceId])
-  @@index([userId])
 }
