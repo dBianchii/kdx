@@ -3,14 +3,12 @@ import { FcGoogle } from "react-icons/fc";
 import { Button } from "@ui/Button";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import type { InferGetServerSidePropsType } from "next";
+import type { InferGetStaticPropsType } from "next";
 import { useState } from "react";
 import { Input } from "@ui/Input";
 import { Separator } from "@ui/Separator";
 
-function SignIn({
-  providers,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+function SignIn({ providers }: InferGetStaticPropsType<typeof getStaticProps>) {
   const { data: session } = useSession();
   const router = useRouter();
   if (session) void router.push("/");
@@ -79,7 +77,7 @@ function SignIn({
   );
 }
 
-export const getServerSideProps = async () => {
+export const getStaticProps = async () => {
   const providers = await getProviders();
   return {
     props: {
