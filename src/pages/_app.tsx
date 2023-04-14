@@ -22,7 +22,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
 
   return (
     <SessionProvider session={session}>
-      <LayoutComponent className="h-fit bg-slate-800">
+      <LayoutComponent className="h-fit bg-k-color-background">
         <Component {...pageProps} />
       </LayoutComponent>
     </SessionProvider>

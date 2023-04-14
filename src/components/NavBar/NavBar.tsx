@@ -193,7 +193,7 @@ function LoginOrUserProfile({ session }: LoginOrUserProfileProps) {
             Sign in
           </Link>
 
-          <Button asChild variant="subtle" className="mx-4">
+          <Button asChild variant="primary" className="mx-4">
             <Link href="/signIn">Sign Up</Link>
           </Button>
         </div>
