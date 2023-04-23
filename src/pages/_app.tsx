@@ -6,8 +6,9 @@ import { api } from "../utils/api";
 
 import "../styles/globals.css";
 
-import NavBar from "../components/NavBar/NavBar";
 import { type ReactNode, Fragment } from "react";
+import NavBar from "@/components/NavBar/NavBar";
+import Header from "@/components/Header/Header";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
@@ -33,6 +34,7 @@ function Layout({ children }: { children?: ReactNode }) {
   return (
     <>
       <NavBar />
+      {/* <Header /> */}
       {children}
     </>
   );

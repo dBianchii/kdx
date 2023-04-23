@@ -7,7 +7,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
-import Button from "@ui/Button";
+import { Button, buttonVariants } from "@ui/Button";
 import { api } from "src/utils/api";
 import type { Session } from "next-auth";
 import classNames from "classnames";
@@ -21,7 +21,7 @@ export default function NavBar() {
   const { data: session } = useSession();
 
   return (
-    <Popover className="relative bg-gray-800 shadow-xl">
+    <Popover className="relative bg-foreground shadow-xl">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="flex items-center justify-between py-6 md:justify-start md:space-x-10">
           <div className="flex justify-start lg:w-0 lg:flex-1">
@@ -167,16 +167,15 @@ function LoginOrUserProfile({ session }: LoginOrUserProfileProps) {
       )}
       {!session?.user.id && (
         <div>
-          <Link
-            href="/signIn"
-            className="whitespace-nowrap text-base font-medium text-gray-500 hover:text-gray-900"
-          >
+          <Link href="/signIn" className={buttonVariants({ variant: "link" })}>
             Sign in
           </Link>
-          <Link href="/signIn">
-            <Button intent="primary" className="mx-4">
-              Sign up
-            </Button>
+
+          <Link
+            href="/signIn"
+            className={buttonVariants({ variant: "default" })}
+          >
+            Sign up
           </Link>
         </div>
       )}

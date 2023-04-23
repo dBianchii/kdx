@@ -18,16 +18,21 @@
     "noUncheckedIndexedAccess": true,
     "baseUrl": ".",
     "paths": {
-      "@ui/*": ["./src/components/UI/*"]
+      "@ui/*": ["./src/components/UI/*"],
+      "@/*": ["./src/*"]
     }
   },
   "include": [
     ".eslintrc.cjs",
     "next-env.d.ts",
+    "additional.d.ts",
     "**/*.ts",
     "**/*.tsx",
     "**/*.cjs",
-    "**/*.mjs"
+    "**/*.mjs",
+    "tailwind.config.js",
+    "tailwind.config.js",
+    "tailwind.config.js"
   ],
   "exclude": ["node_modules"]
 }
