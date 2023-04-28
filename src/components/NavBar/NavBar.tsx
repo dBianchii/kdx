@@ -7,10 +7,10 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
-import { Button, buttonVariants } from "@ui/Button";
 import { api } from "src/utils/api";
 import type { Session } from "next-auth";
 import classNames from "classnames";
+import { Button, buttonVariants } from "@ui/button";
 
 const callsToActionProfilePic = [
   //{ name: 'Settings', href: '#', icon: Cog6ToothIcon },
@@ -21,7 +21,7 @@ export default function NavBar() {
   const { data: session } = useSession();
 
   return (
-    <Popover className="relative bg-foreground shadow-xl">
+    <Popover className="relative bg-foreground shadow-md">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="flex items-center justify-between py-6 md:justify-start md:space-x-10">
           <div className="flex justify-start lg:w-0 lg:flex-1">
@@ -142,18 +142,18 @@ function LoginOrUserProfile({ session }: LoginOrUserProfileProps) {
                       <div className="space-y-6 bg-gray-700 px-5 py-5 sm:flex sm:space-y-0 sm:space-x-10 sm:px-8">
                         {callsToActionProfilePic.map((item) => (
                           <div key={item.name} className="flow-root">
-                            <button
-                              className="-m-3 flex items-center rounded-md p-3 text-base font-medium text-gray-900 hover:bg-gray-600"
+                            <Button
+                              variant="default"
                               onClick={() => void signOut()}
                             >
                               <item.icon
-                                className="h-6 w-6 flex-shrink-0 text-white"
+                                className="h-6 w-6 flex-shrink-0 text-primary-foreground"
                                 aria-hidden="true"
                               />
                               <span className="ml-3 text-white">
                                 {item.name}
                               </span>
-                            </button>
+                            </Button>
                           </div>
                         ))}
                       </div>
@@ -167,13 +167,16 @@ function LoginOrUserProfile({ session }: LoginOrUserProfileProps) {
       )}
       {!session?.user.id && (
         <div>
-          <Link href="/signIn" className={buttonVariants({ variant: "link" })}>
+          <Link
+            href="/signIn"
+            className={buttonVariants({ variant: "default" })}
+          >
             Sign in
           </Link>
 
           <Link
             href="/signIn"
-            className={buttonVariants({ variant: "default" })}
+            className={buttonVariants({ variant: "secondary" })}
           >
             Sign up
           </Link>

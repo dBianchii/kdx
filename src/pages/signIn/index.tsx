@@ -1,6 +1,6 @@
 import { signIn, getProviders, useSession } from "next-auth/react";
 import { FcGoogle } from "react-icons/fc";
-import Button from "@ui/Button";
+import { Button } from "@ui/button";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import type { InferGetStaticPropsType } from "next";
@@ -44,11 +44,10 @@ function SignIn({ providers }: InferGetStaticPropsType<typeof getStaticProps>) {
                   />
                 </div>
                 <Button
-                  intent="primary"
+                  variant="default"
                   onClick={() =>
                     void signIn("email", { email, callbackUrl: "/" })
                   }
-                  fullWidth={true}
                 >
                   Sign In
                 </Button>
@@ -58,8 +57,7 @@ function SignIn({ providers }: InferGetStaticPropsType<typeof getStaticProps>) {
             {providers?.google && (
               <>
                 <Button
-                  intent="secondary"
-                  fullWidth={true}
+                  variant="secondary"
                   onClick={() => void signIn("google", { callbackUrl: "/" })}
                 >
                   <FcGoogle className="inline" /> Login With Google
