@@ -1,7 +1,7 @@
 import TeamSwitcher from "./teamSwitcher";
 import { cn } from "@ui/lib/utils";
 import Link from "next/link";
-
+import { useRouter } from "next/router";
 import { CreditCard, LogOut, PlusCircle, Settings, User } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -19,10 +19,21 @@ import {
 import { useSession } from "next-auth/react";
 
 export default function Header() {
+  const { data: session } = useSession();
+
   return (
     <header className="border-b">
-      <div className="flex h-16 items-center px-4">
-        <TeamSwitcher />
+      <div className="flex h-16 items-center px-4 ">
+        {!session && (
+          <Link
+            href="/"
+            className="text-bold mx-5 text-xl font-medium text-primary"
+          >
+            Kodix
+          </Link>
+        )}
+        {!!session && <TeamSwitcher />}
+
         <MainNav className="mx-6" />
         <div className="ml-auto flex items-center space-x-4">
           <UserNav />
@@ -33,27 +44,35 @@ export default function Header() {
 }
 
 function MainNav({ className, ...props }: React.HTMLAttributes<HTMLElement>) {
-  const navigation = {
-    href: "/marketplace",
-    title: "Marketplace",
-  };
+  const router = useRouter();
+  const navigation = [
+    {
+      href: "/marketplace",
+      title: "Marketplace",
+    },
+    {
+      href: "/apps",
+      title: "Apps",
+    },
+  ];
+
   return (
     <nav
       className={cn("flex items-center space-x-4 lg:space-x-6", className)}
       {...props}
     >
-      <Link
-        href="/marketplace"
-        className="text-sm font-medium transition-colors hover:text-primary"
-      >
-        Marketplace
-      </Link>
-      <Link
-        href="/apps"
-        className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-      >
-        Apps
-      </Link>
+      {navigation.map((item) => (
+        <Link
+          href={item.href}
+          key={item.href}
+          className={
+            "text-sm font-medium transition-colors hover:text-primary " +
+            (router.pathname !== item.href ? " text-muted-foreground" : "")
+          }
+        >
+          {item.title}
+        </Link>
+      ))}
     </nav>
   );
 }
@@ -114,8 +133,8 @@ export function UserNav() {
         </DropdownMenu>
       )}
       {!session?.user.id && (
-        <div className="mr-5 space-x-4">
-          <Link href="/signIn" className={buttonVariants({ variant: "link" })}>
+        <div className="mr-5 space-x-2">
+          <Link href="/signIn" className={buttonVariants({ variant: "ghost" })}>
             Sign In
           </Link>
           <Link
