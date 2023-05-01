@@ -5,7 +5,7 @@ import { Check, ChevronsUpDown, PlusCircle } from "lucide-react";
 
 import { cn } from "@ui/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { Button } from "@ui/button";
 import {
   Command,
   CommandEmpty,
