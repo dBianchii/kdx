@@ -6,8 +6,12 @@ import { api } from "../utils/api";
 
 import "../styles/globals.css";
 
-import NavBar from "../components/NavBar/NavBar";
 import { type ReactNode, Fragment } from "react";
+import Header from "@/components/Header/Header";
+import { ThemeProvider } from "@/components/theme-provider";
+import { TailwindIndicator } from "@/components/tailwind-indicator";
+import Footer from "@/components/Footer/footer";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
@@ -22,9 +26,13 @@ const MyApp: AppType<{ session: Session | null }> = ({
 
   return (
     <SessionProvider session={session}>
-      <LayoutComponent>
-        <Component {...pageProps} />
-      </LayoutComponent>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <LayoutComponent>
+          <Component {...pageProps} />
+        </LayoutComponent>
+        <ThemeSwitcher devMode={true} />
+        <TailwindIndicator />
+      </ThemeProvider>
     </SessionProvider>
   );
 };
@@ -32,8 +40,9 @@ const MyApp: AppType<{ session: Session | null }> = ({
 function Layout({ children }: { children?: ReactNode }) {
   return (
     <>
-      <NavBar />
+      <Header />
       {children}
+      <Footer />
     </>
   );
 }

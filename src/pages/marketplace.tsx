@@ -2,12 +2,11 @@ import KodixApp from "../components/App/KodixApp";
 import { api } from "../utils/api";
 
 export default function Marketplace() {
-  //const data = api.app.getAll.useQuery();
   const data = api.app.getAllWithInstalled.useQuery(undefined);
   const loading = data.isLoading;
 
   return (
-    <div className="flex min-h-screen flex-row bg-gradient-to-b from-[#2e026d] to-[#15162c]">
+    <div className="flex min-h-screen flex-row bg-background">
       {data.data &&
         !loading &&
         data.data.map((app) => (

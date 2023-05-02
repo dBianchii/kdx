@@ -1,6 +1,13 @@
-import Image from "next/image";
 import { api } from "src/utils/api";
-import { useRouter } from "next/navigation";
+import { Button } from "@ui/button";
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@ui/card";
 
 type Props = {
   id: string;
@@ -14,11 +21,11 @@ const KodixApp: React.FC<Props> = ({
   id,
   appName,
   appDescription,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   appUrl,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   installed = false,
 }) => {
-  const router = useRouter();
-
   const ctx = api.useContext();
   const { mutate } = api.workspace.installApp.useMutation({
     onSuccess: () => {
@@ -27,27 +34,22 @@ const KodixApp: React.FC<Props> = ({
   });
 
   return (
-    <div className="mb-4 max-w-sm rounded-3xl bg-gray-700 p-5 text-center font-semibold shadow-xl">
-      <Image
-        width={20}
-        height={20}
-        className="mx-auto mb-3 h-20 w-20 rounded-full shadow-lg"
-        src="https://pbs.twimg.com/media/EaZSuXXXkAAMtJ5?format=jpg&name=small"
-        alt="app"
-      />
-      <h1 className="text-lg text-gray-200">{appName}</h1>
-      <p className="mt-4 text-xs text-gray-400">{appDescription}</p>
-      <button
-        onClick={
-          !installed
-            ? () => void mutate({ appId: id })
-            : () => router.push(appUrl)
-        }
-        className="mt-8 rounded-3xl px-8 py-2 font-semibold tracking-wide text-gray-100 hover:bg-gray-600"
-      >
-        {installed ? "Open App" : "Install"}
-      </button>
-    </div>
+    <Card className="w-[350px]">
+      <CardHeader>
+        <CardTitle>{appName}</CardTitle>
+        <CardDescription>{appDescription}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form>
+          <div className="grid w-full items-center gap-4">
+            <div className="flex flex-col space-y-1.5">
+              <Button onClick={() => mutate({ appId: id })}>Install</Button>
+            </div>
+            <div className="flex flex-col space-y-1.5"></div>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
   );
 };
 
