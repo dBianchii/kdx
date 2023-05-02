@@ -11,6 +11,7 @@ import Header from "@/components/Header/Header";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TailwindIndicator } from "@/components/tailwind-indicator";
 import Footer from "@/components/Footer/footer";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
@@ -29,6 +30,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
         <LayoutComponent>
           <Component {...pageProps} />
         </LayoutComponent>
+        <ThemeSwitcher devMode={true} />
         <TailwindIndicator />
       </ThemeProvider>
     </SessionProvider>
