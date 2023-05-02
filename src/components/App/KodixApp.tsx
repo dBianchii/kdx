@@ -20,7 +20,9 @@ const KodixApp: React.FC<Props> = ({
   id,
   appName,
   appDescription,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   appUrl,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   installed = false,
 }) => {
   const ctx = api.useContext();
