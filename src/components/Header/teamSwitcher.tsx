@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Check, ChevronsUpDown, PlusCircle } from "lucide-react";
+import type { Workspace as PrismaWorkspace } from "@prisma/client";
 
 import { cn } from "@ui/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -31,40 +32,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-const groups = [
-  {
-    label: "Personal Account",
-    teams: [
-      {
-        label: "Alicia Koch",
-        value: "personal",
-      },
-    ],
-  },
-  {
-    label: "Teams",
-    teams: [
-      {
-        label: "Acme Inc.",
-        value: "acme-inc",
-      },
-      {
-        label: "Monsters Inc.",
-        value: "monsters",
-      },
-    ],
-  },
-];
-
-type Team = (typeof groups)[number]["teams"][number];
+import { api } from "@/utils/api";
+import { useSession } from "next-auth/react";
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
   typeof PopoverTrigger
@@ -73,16 +42,42 @@ type PopoverTriggerProps = React.ComponentPropsWithoutRef<
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface TeamSwitcherProps extends PopoverTriggerProps {}
 
+type Workspace = Pick<PrismaWorkspace, "id" | "name">;
+
 export default function TeamSwitcher({ className }: TeamSwitcherProps) {
+  const ctx = api.useContext();
+  const { data: session } = useSession();
+
+  const { data: workspaces } = api.workspace.getAllForLoggedUser.useQuery(
+    undefined,
+    {
+      enabled: session?.user !== undefined,
+    }
+  );
+
+  const { mutateAsync } = api.user.switchActiveWorkspace.useMutation({
+    onSuccess: () => {
+      void ctx.workspace.getAllForLoggedUser.invalidate();
+    },
+  });
+
+  const array: [string, object] = ["asd", { banana: "isAwesome" }];
+
   const [open, setOpen] = React.useState(false);
-  const [showNewTeamDialog, setShowNewTeamDialog] = React.useState(false);
-  const [selectedTeam, setSelectedTeam] = React.useState<Team>({
-    label: "Alicia Koch",
-    value: "personal",
+  const [showNewWorkspaceDialog, setShowNewWorkspaceDialog] =
+    React.useState(false);
+  const [selectedWS, setSelectedWS] = React.useState<Workspace>({
+    id: session?.user?.activeWorkspaceId || "",
+    name:
+      workspaces?.find((w) => w.id === session?.user?.activeWorkspaceId)
+        ?.name || "",
   });
 
   return (
-    <Dialog open={showNewTeamDialog} onOpenChange={setShowNewTeamDialog}>
+    <AddWorkspaceDialog
+      open={showNewWorkspaceDialog}
+      onOpenChange={setShowNewWorkspaceDialog}
+    >
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -95,12 +90,19 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
           >
             <Avatar className="mr-2 h-5 w-5">
               <AvatarImage
-                src={`https://avatar.vercel.sh/${selectedTeam.value}.png`}
-                alt={selectedTeam.label}
+                src={`https://avatar.vercel.sh/${
+                  selectedWS.name + selectedWS.id
+                }.png`}
+                alt={selectedWS.name}
               />
-              <AvatarFallback>SC</AvatarFallback>
+              <AvatarFallback>
+                {selectedWS.name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")}
+              </AvatarFallback>
             </Avatar>
-            {selectedTeam.label}
+            {selectedWS.name}
             <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -109,35 +111,44 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
             <CommandList>
               <CommandInput placeholder="Search team..." />
               <CommandEmpty>No team found.</CommandEmpty>
-              {groups.map((group) => (
-                <CommandGroup key={group.label} heading={group.label}>
-                  {group.teams.map((team) => (
-                    <CommandItem
-                      key={team.value}
-                      onSelect={() => {
-                        setSelectedTeam(team);
-                        setOpen(false);
-                      }}
-                      className="text-sm"
-                    >
-                      <Avatar className="mr-2 h-5 w-5">
-                        <AvatarImage
-                          src={`https://avatar.vercel.sh/${team.value}.png`}
-                          alt={team.label}
-                        />
-                        <AvatarFallback>SC</AvatarFallback>
-                      </Avatar>
-                      {team.label}
-                      <Check
-                        className={cn(
-                          "ml-auto h-4 w-4",
-                          selectedTeam.value === team.value
-                            ? "opacity-100"
-                            : "opacity-0"
-                        )}
+              {workspaces?.map((ws) => (
+                <CommandGroup key={ws.id}>
+                  <CommandItem
+                    key={ws.id}
+                    onSelect={() => {
+                      setSelectedWS({
+                        id: ws.id,
+                        name: ws.name,
+                      });
+                      setOpen(false);
+                      void mutateAsync({ workspaceId: ws.id });
+                    }}
+                    className="text-sm"
+                  >
+                    <Avatar className="mr-2 h-5 w-5">
+                      <AvatarImage
+                        src={`https://avatar.vercel.sh/${ws.id}kdx.png`}
+                        alt={ws.name}
                       />
-                    </CommandItem>
-                  ))}
+                      <AvatarFallback>
+                        {session?.user.name
+                          ? session?.user?.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")
+                          : ""}
+                      </AvatarFallback>
+                    </Avatar>
+                    {ws.name}
+                    <Check
+                      className={cn(
+                        "ml-auto h-4 w-4",
+                        selectedWS.name === ws.name
+                          ? "opacity-100"
+                          : "opacity-0"
+                      )}
+                    />
+                  </CommandItem>
                 </CommandGroup>
               ))}
             </CommandList>
@@ -148,7 +159,7 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
                   <CommandItem
                     onSelect={() => {
                       setOpen(false);
-                      setShowNewTeamDialog(true);
+                      setShowNewWorkspaceDialog(true);
                     }}
                   >
                     <PlusCircle className="mr-2 h-5 w-5" />
@@ -160,20 +171,54 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
           </Command>
         </PopoverContent>
       </Popover>
+    </AddWorkspaceDialog>
+  );
+}
+
+/**
+ * To use this Dialog, make sure you wrap it in a DialogTrigger component.
+ * To activate the Dialog component from within a Context Menu or Dropdown Menu, you must encase the Context Menu or Dropdown Menu component in the Dialog component.
+ */
+export function AddWorkspaceDialog({
+  children,
+  open,
+  onOpenChange,
+}: {
+  children: React.ReactNode;
+  open: boolean;
+  onOpenChange: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
+  const ctx = api.useContext();
+  const { mutateAsync } = api.workspace.create.useMutation({
+    onSuccess: () => {
+      void ctx.workspace.getAllForLoggedUser.invalidate();
+    },
+  });
+  const [workspaceName, changeWorkspaceName] = React.useState("");
+  const { data: session } = useSession();
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      {children}
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create team</DialogTitle>
+          <DialogTitle>Create workspace</DialogTitle>
           <DialogDescription>
-            Add a new team to manage products and customers.
+            Create a new workspace and invite your team members
           </DialogDescription>
         </DialogHeader>
         <div>
           <div className="space-y-4 py-2 pb-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Team name</Label>
-              <Input id="name" placeholder="Acme Inc." />
+              <Label htmlFor="name">Workspace name</Label>
+              <Input
+                id="name"
+                placeholder="Acme Inc."
+                value={workspaceName}
+                onChange={(e) => changeWorkspaceName(e.target.value)}
+              />
             </div>
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Label htmlFor="plan">Subscription plan</Label>
               <Select>
                 <SelectTrigger>
@@ -194,14 +239,25 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
                   </SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </div> This is a nice way to do forms so I am not deleting it yet until ive used it somewhere else*/}
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setShowNewTeamDialog(false)}>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button type="submit">Continue</Button>
+          <Button
+            type="submit"
+            onClick={() => {
+              void mutateAsync({
+                userId: session?.user.id ?? "",
+                workspaceName: workspaceName,
+              });
+              onOpenChange(false);
+            }}
+          >
+            Create
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
