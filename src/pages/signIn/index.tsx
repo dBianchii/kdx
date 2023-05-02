@@ -31,49 +31,50 @@ function SignIn({ providers }: InferGetStaticPropsType<typeof getStaticProps>) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <form>
-              <div className="grid w-full items-center">
-                <div className="flex flex-col">
-                  {providers?.email && (
-                    <>
-                      <Label
-                        htmlFor="email"
-                        className="mb-2 block text-sm font-medium text-foreground"
-                      >
-                        Your email
-                      </Label>
-                      <Input
-                        type="email"
-                        placeholder="name@company.com"
-                        id="email"
-                        onChange={(e) => setEmail(e.target.value)}
-                      />
-                      <Button
-                        variant="default"
-                        onClick={() => void signIn("email", { email })}
-                        className="mt-4"
-                      >
-                        Sign In
-                      </Button>
-                    </>
-                  )}
+            <div className="grid w-full items-center">
+              <div className="flex flex-col">
+                {providers?.email && (
+                  <>
+                    <Label
+                      htmlFor="email"
+                      className="mb-2 block text-sm font-medium text-foreground"
+                    >
+                      Your email
+                    </Label>
+                    <Input
+                      type="email"
+                      placeholder="name@company.com"
+                      id="email"
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                    <Button
+                      variant="default"
+                      onClick={() =>
+                        void signIn("email", { email, callbackUrl: "/" })
+                      }
+                      className="mt-4"
+                    >
+                      Sign In
+                    </Button>
+                  </>
+                )}
 
-                  <Separator className="my-4" />
+                <Separator className="my-4" />
 
-                  {providers?.google && (
-                    <>
-                      <Button
-                        variant="ghost"
-                        onClick={() => void signIn("google")}
-                      >
-                        <FcGoogle className="mr-2 h-4 w-4" /> Sign in with
-                        Google
-                      </Button>
-                    </>
-                  )}
-                </div>
+                {providers?.google && (
+                  <>
+                    <Button
+                      variant="ghost"
+                      onClick={() =>
+                        void signIn("google", { callbackUrl: "/" })
+                      }
+                    >
+                      <FcGoogle className="mr-2 h-4 w-4" /> Sign in with Google
+                    </Button>
+                  </>
+                )}
               </div>
-            </form>
+            </div>
           </CardContent>
         </Card>
       </div>
