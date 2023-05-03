@@ -6,7 +6,7 @@ import type { Workspace as PrismaWorkspace } from "@prisma/client";
 import Router from "next/router";
 import { cn } from "@ui/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@ui/button";
+import { Button, buttonVariants } from "@ui/button";
 import {
   Command,
   CommandEmpty,
@@ -84,14 +84,12 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
       onOpenChange={setShowNewWorkspaceDialog}
     >
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
+        <div className="center flex justify-center rounded-lg border border-border">
           <Button
             variant="ghost"
             size="sm"
-            role="combobox"
-            aria-expanded={open}
-            aria-label="Select a team"
-            className={cn("w-[200px] justify-between", className)}
+            className={cn("w-[175px] justify-start", className)}
+            disabled={reloading}
           >
             {reloading ? (
               <>
@@ -115,9 +113,20 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
                 {selectedWS.name}
               </>
             )}
-            <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
           </Button>
-        </PopoverTrigger>
+          <PopoverTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              role="combobox"
+              aria-expanded={open}
+              aria-label="Select a workspace"
+              disabled={reloading}
+            >
+              <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+        </div>
         <PopoverContent className="w-[200px] p-0">
           <Command>
             <CommandList>
