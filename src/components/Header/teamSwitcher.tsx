@@ -6,7 +6,7 @@ import type { Workspace as PrismaWorkspace } from "@prisma/client";
 import Router from "next/router";
 import { cn } from "@ui/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button, buttonVariants } from "@ui/button";
+import { Button } from "@ui/button";
 import {
   Command,
   CommandEmpty,
@@ -35,6 +35,8 @@ import {
 import { api } from "@/utils/api";
 import { useSession } from "next-auth/react";
 import { Skeleton } from "../ui/skeleton";
+import { ToastAction } from "@/components/ui/toast";
+import { useToast } from "@/components/ui/use-toast";
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
   typeof PopoverTrigger
@@ -211,10 +213,23 @@ export function AddWorkspaceDialog({
   open: boolean;
   onOpenChange: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
+  const [loading, setLoading] = React.useState(false);
   const ctx = api.useContext();
+  const { toast } = useToast();
   const { mutateAsync } = api.workspace.create.useMutation({
-    onSuccess: () => {
+    onSuccess: (result) => {
       void ctx.workspace.getAllForLoggedUser.invalidate();
+      onOpenChange(false);
+      toast({
+        variant: "default",
+        title: `Workspace ${result.name} created`,
+        description: "Successfully created a new workspace.",
+        action: (
+          <ToastAction disabled altText="Goto schedule to undo">
+            Undo
+          </ToastAction>
+        ),
+      });
     },
   });
   const [workspaceName, changeWorkspaceName] = React.useState("");
@@ -270,15 +285,17 @@ export function AddWorkspaceDialog({
             Cancel
           </Button>
           <Button
+            disabled={loading}
             type="submit"
             onClick={() => {
               void mutateAsync({
                 userId: session?.user.id ?? "",
                 workspaceName: workspaceName,
               });
-              onOpenChange(false);
+              setLoading(true);
             }}
           >
+            {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
             Create
           </Button>
         </DialogFooter>

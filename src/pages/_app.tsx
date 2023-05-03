@@ -12,6 +12,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { TailwindIndicator } from "@/components/tailwind-indicator";
 import Footer from "@/components/Footer/footer";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import { Toaster } from "@ui/toaster";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
@@ -29,6 +30,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         <LayoutComponent>
           <Component {...pageProps} />
+          <Toaster />
         </LayoutComponent>
 
         {/* UI Design Helpers */}
