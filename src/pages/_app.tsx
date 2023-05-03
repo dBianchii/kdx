@@ -30,8 +30,16 @@ const MyApp: AppType<{ session: Session | null }> = ({
         <LayoutComponent>
           <Component {...pageProps} />
         </LayoutComponent>
-        <ThemeSwitcher devMode={true} />
-        <TailwindIndicator />
+
+        {/* UI Design Helpers */}
+        {process.env.NODE_ENV !== "production" && (
+          <div className="fixed bottom-1 left-1 z-50 flex flex-row items-center space-x-1">
+            <div className="flex">
+              <ThemeSwitcher />
+            </div>
+            <TailwindIndicator />
+          </div>
+        )}
       </ThemeProvider>
     </SessionProvider>
   );
