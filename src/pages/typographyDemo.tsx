@@ -1,11 +1,6 @@
-"use client";
 import { H1, H2, H3, P, Blockquote, UL } from "@ui/typography";
-import { useRouter } from "next/router";
 
 export default function TypographyDemo() {
-  const router = useRouter();
-  if (process.env.NODE_ENV === "production") return void router.push("/");
-
   return (
     <div className="p-10">
       <H1>The Joke Tax Chronicles</H1>
@@ -67,4 +62,16 @@ export default function TypographyDemo() {
       </P>
     </div>
   );
+}
+
+export function getServerSideProps() {
+  if (process.env.NODE_ENV === "production")
+    return {
+      redirect: {
+        permanent: false,
+        destination: "/",
+      },
+    };
+
+  return { props: {} };
 }
