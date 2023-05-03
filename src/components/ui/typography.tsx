@@ -1,8 +1,7 @@
 import { cn } from "@ui/lib/utils";
+import type { ComponentProps } from "react";
 
-type HeadingProps = React.HTMLAttributes<HTMLHeadingElement>;
-
-export function H1({ children, className }: HeadingProps) {
+export function H1({ children, className }: ComponentProps<"h1">) {
   return (
     <h1
       className={cn(
@@ -15,7 +14,7 @@ export function H1({ children, className }: HeadingProps) {
   );
 }
 
-export function H2({ children, className }: HeadingProps) {
+export function H2({ children, className }: ComponentProps<"h2">) {
   return (
     <h2
       className={cn(
@@ -28,7 +27,7 @@ export function H2({ children, className }: HeadingProps) {
   );
 }
 
-export function H3({ children, className }: HeadingProps) {
+export function H3({ children, className }: ComponentProps<"h3">) {
   return (
     <h3
       className={cn(
@@ -41,7 +40,7 @@ export function H3({ children, className }: HeadingProps) {
   );
 }
 
-export function H4({ children, className }: HeadingProps) {
+export function H4({ children, className }: ComponentProps<"h4">) {
   return (
     <h4
       className={cn(
@@ -54,8 +53,7 @@ export function H4({ children, className }: HeadingProps) {
   );
 }
 
-type ParagraphProps = React.HTMLAttributes<HTMLParagraphElement>;
-export function P({ children, className }: ParagraphProps) {
+export function P({ children, className }: ComponentProps<"p">) {
   return (
     <p className={cn("leading-7 [&:not(:first-child)]:mt-6", className)}>
       {children}
@@ -63,8 +61,10 @@ export function P({ children, className }: ParagraphProps) {
   );
 }
 
-type BlockQuoteProps = React.BlockquoteHTMLAttributes<HTMLQuoteElement>;
-export function Blockquote({ children, className }: BlockQuoteProps) {
+export function Blockquote({
+  children,
+  className,
+}: ComponentProps<"blockquote">) {
   return (
     <blockquote className={cn("mt-6 border-l-2 pl-6 italic", className)}>
       {children}
@@ -72,8 +72,7 @@ export function Blockquote({ children, className }: BlockQuoteProps) {
   );
 }
 
-type ULProps = React.HTMLAttributes<HTMLUListElement>;
-export function UL({ children, className }: ULProps) {
+export function UL({ children, className }: ComponentProps<"ul">) {
   return (
     <ul className={cn("my-6 ml-6 list-disc [&>li]:mt-2", className)}>
       {children}
@@ -81,21 +80,19 @@ export function UL({ children, className }: ULProps) {
   );
 }
 
-export function Lead({ children, className }: ParagraphProps) {
+export function Lead({ children, className }: ComponentProps<"p">) {
   return (
     <p className={cn("text-xl text-muted-foreground", className)}>{children}</p>
   );
 }
 
-type DivProps = React.HTMLAttributes<HTMLDivElement>;
-export function Large({ children, className }: DivProps) {
+export function Large({ children, className }: ComponentProps<"div">) {
   return (
     <div className={cn("text-lg font-semibold", className)}>{children}</div>
   );
 }
 
-type SmallProps = React.HTMLAttributes<HTMLElement>;
-export function Small({ children, className }: SmallProps) {
+export function Small({ children, className }: ComponentProps<"small">) {
   return (
     <small className={cn("text-sm font-medium leading-none", className)}>
       {children}
@@ -103,7 +100,7 @@ export function Small({ children, className }: SmallProps) {
   );
 }
 
-export function Muted({ children, className }: ParagraphProps) {
+export function Muted({ children, className }: ComponentProps<"p">) {
   return (
     <p className={cn("text-sm text-muted-foreground", className)}>{children}</p>
   );
