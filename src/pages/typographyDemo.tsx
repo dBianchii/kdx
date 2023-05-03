@@ -1,9 +1,10 @@
+"use client";
 import { H1, H2, H3, P, Blockquote, UL } from "@ui/typography";
 import { useRouter } from "next/router";
 
 export default function TypographyDemo() {
   const router = useRouter();
-  if (process.env.NODE_ENV === "production") void router.push("/");
+  if (process.env.NODE_ENV === "production") return void router.push("/");
 
   return (
     <div className="p-10">

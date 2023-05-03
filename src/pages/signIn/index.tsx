@@ -10,7 +10,6 @@ import { Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@ui/card";
 import { Label } from "@ui/label";
 import { Input } from "@ui/input";
-import { Separator } from "@ui/separator";
 
 function SignIn({ providers }: InferGetStaticPropsType<typeof getStaticProps>) {
   const { data: session } = useSession();
