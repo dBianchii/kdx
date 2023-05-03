@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Check, ChevronsUpDown, PlusCircle } from "lucide-react";
+import { Check, ChevronsUpDown, PlusCircle, Loader2 } from "lucide-react";
 import type { Workspace as PrismaWorkspace } from "@prisma/client";
 import Router from "next/router";
 import { cn } from "@ui/lib/utils";
@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/popover";
 import { api } from "@/utils/api";
 import { useSession } from "next-auth/react";
+import { Skeleton } from "../ui/skeleton";
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
   typeof PopoverTrigger
@@ -75,6 +76,7 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
   const [open, setOpen] = React.useState(false);
   const [showNewWorkspaceDialog, setShowNewWorkspaceDialog] =
     React.useState(false);
+  const [reloading, setReloading] = React.useState(false);
 
   return (
     <AddWorkspaceDialog
@@ -91,19 +93,28 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
             aria-label="Select a team"
             className={cn("w-[200px] justify-between", className)}
           >
-            <Avatar className="mr-2 h-5 w-5">
-              <AvatarImage
-                src={`https://avatar.vercel.sh/${selectedWS.id}kdx.png`}
-                alt={selectedWS.name}
-              />
-              <AvatarFallback>
-                {selectedWS.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}
-              </AvatarFallback>
-            </Avatar>
-            {selectedWS.name}
+            {reloading ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                <Skeleton className="mx-3 h-3 w-full" />
+              </>
+            ) : (
+              <>
+                <Avatar className="mr-2 h-5 w-5">
+                  <AvatarImage
+                    src={`https://avatar.vercel.sh/${selectedWS.id}kdx.png`}
+                    alt={selectedWS.name}
+                  />
+                  <AvatarFallback>
+                    {selectedWS.name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")}
+                  </AvatarFallback>
+                </Avatar>
+                {selectedWS.name}
+              </>
+            )}
             <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -126,6 +137,7 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
                       value !== selectedWS.id
                         ? void mutateAsync({ workspaceId: ws.id })
                         : null;
+                      setReloading(true);
                     }}
                     className="text-sm"
                   >
