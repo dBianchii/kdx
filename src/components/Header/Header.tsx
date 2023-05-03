@@ -58,7 +58,7 @@ function MainNav({ className, ...props }: React.HTMLAttributes<HTMLElement>) {
       title: "Apps",
       shown: session?.user.id !== undefined,
     },
-  ].map((item) => ({ ...item, shown: item.shown ?? true })); // defaults shown to true
+  ].map((item) => ({ ...item, shown: item.shown ?? true })); // defaults shown to true if not defined
 
   return (
     <nav
@@ -71,10 +71,10 @@ function MainNav({ className, ...props }: React.HTMLAttributes<HTMLElement>) {
           <Link
             href={item.href}
             key={item.href}
-            className={
-              "text-sm font-medium transition-colors hover:text-primary " +
-              (router.pathname !== item.href ? " text-muted-foreground" : "")
-            }
+            className={cn(
+              "text-sm font-medium transition-colors hover:text-primary",
+              router.pathname !== item.href ? "text-muted-foreground" : null
+            )}
           >
             {item.title}
           </Link>
@@ -85,7 +85,6 @@ function MainNav({ className, ...props }: React.HTMLAttributes<HTMLElement>) {
 
 export function UserNav() {
   const { data: session } = useSession();
-  const [open, setOpen] = React.useState(false);
   const [showNewWorkspaceDialog, setShowNewWorkspaceDialog] =
     React.useState(false);
   return (

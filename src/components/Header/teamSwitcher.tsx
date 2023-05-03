@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Check, ChevronsUpDown, PlusCircle } from "lucide-react";
 import type { Workspace as PrismaWorkspace } from "@prisma/client";
-
+import Router from "next/router";
 import { cn } from "@ui/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@ui/button";
@@ -39,8 +39,7 @@ type PopoverTriggerProps = React.ComponentPropsWithoutRef<
   typeof PopoverTrigger
 >;
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface TeamSwitcherProps extends PopoverTriggerProps {}
+type TeamSwitcherProps = PopoverTriggerProps;
 
 type Workspace = Pick<PrismaWorkspace, "id" | "name">;
 
@@ -48,30 +47,35 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
   const ctx = api.useContext();
   const { data: session } = useSession();
 
+  const [selectedWS, setSelectedWS] = React.useState<Workspace>({
+    id: session?.user?.activeWorkspaceId || "",
+    name: "",
+  });
+
   const { data: workspaces } = api.workspace.getAllForLoggedUser.useQuery(
     undefined,
     {
       enabled: session?.user !== undefined,
+      onSuccess: (data) => {
+        const newSelectedWS = data.find((ws) => ws.id === selectedWS.id);
+        if (newSelectedWS === undefined) return;
+        setSelectedWS({
+          id: newSelectedWS.id,
+          name: newSelectedWS.name,
+        });
+      },
     }
   );
 
   const { mutateAsync } = api.user.switchActiveWorkspace.useMutation({
     onSuccess: () => {
-      void ctx.workspace.getAllForLoggedUser.invalidate();
+      Router.reload();
     },
   });
-
-  const array: [string, object] = ["asd", { banana: "isAwesome" }];
 
   const [open, setOpen] = React.useState(false);
   const [showNewWorkspaceDialog, setShowNewWorkspaceDialog] =
     React.useState(false);
-  const [selectedWS, setSelectedWS] = React.useState<Workspace>({
-    id: session?.user?.activeWorkspaceId || "",
-    name:
-      workspaces?.find((w) => w.id === session?.user?.activeWorkspaceId)
-        ?.name || "",
-  });
 
   return (
     <AddWorkspaceDialog
@@ -90,9 +94,7 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
           >
             <Avatar className="mr-2 h-5 w-5">
               <AvatarImage
-                src={`https://avatar.vercel.sh/${
-                  selectedWS.name + selectedWS.id
-                }.png`}
+                src={`https://avatar.vercel.sh/${selectedWS.id}kdx.png`}
                 alt={selectedWS.name}
               />
               <AvatarFallback>
@@ -110,18 +112,21 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
           <Command>
             <CommandList>
               <CommandInput placeholder="Search team..." />
-              <CommandEmpty>No team found.</CommandEmpty>
-              {workspaces?.map((ws) => (
-                <CommandGroup key={ws.id}>
+              <CommandEmpty>No workspace found.</CommandEmpty>
+              <CommandGroup>
+                {workspaces?.map((ws) => (
                   <CommandItem
-                    key={ws.id}
-                    onSelect={() => {
+                    key={ws.name}
+                    value={ws.name + ws.id} //
+                    onSelect={(value) => {
                       setSelectedWS({
                         id: ws.id,
                         name: ws.name,
                       });
                       setOpen(false);
-                      void mutateAsync({ workspaceId: ws.id });
+                      value !== selectedWS.id
+                        ? void mutateAsync({ workspaceId: ws.id })
+                        : null;
                     }}
                     className="text-sm"
                   >
@@ -143,14 +148,12 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
                     <Check
                       className={cn(
                         "ml-auto h-4 w-4",
-                        selectedWS.name === ws.name
-                          ? "opacity-100"
-                          : "opacity-0"
+                        selectedWS.id === ws.id ? "opacity-100" : "opacity-0"
                       )}
                     />
                   </CommandItem>
-                </CommandGroup>
-              ))}
+                ))}
+              </CommandGroup>
             </CommandList>
             <CommandSeparator />
             <CommandList>
@@ -163,7 +166,7 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
                     }}
                   >
                     <PlusCircle className="mr-2 h-5 w-5" />
-                    Create Team
+                    Create Workspace
                   </CommandItem>
                 </DialogTrigger>
               </CommandGroup>
@@ -177,7 +180,7 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
 
 /**
  * To use this Dialog, make sure you wrap it in a DialogTrigger component.
- * To activate the Dialog component from within a Context Menu or Dropdown Menu, you must encase the Context Menu or Dropdown Menu component in the Dialog component.
+ * To activate the AddWorkspaceDialog component from within a Context Menu or Dropdown Menu, you must encase the Context Menu or Dropdown Menu component in the AddWorkspaceDialog component.
  */
 export function AddWorkspaceDialog({
   children,
