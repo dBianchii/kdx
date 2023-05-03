@@ -44,7 +44,6 @@ type TeamSwitcherProps = PopoverTriggerProps;
 type Workspace = Pick<PrismaWorkspace, "id" | "name">;
 
 export default function TeamSwitcher({ className }: TeamSwitcherProps) {
-  const ctx = api.useContext();
   const { data: session } = useSession();
 
   const [selectedWS, setSelectedWS] = React.useState<Workspace>({
