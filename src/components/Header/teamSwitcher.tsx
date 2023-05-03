@@ -6,7 +6,7 @@ import type { Workspace as PrismaWorkspace } from "@prisma/client";
 import Router from "next/router";
 import { cn } from "@ui/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@ui/button";
+import { Button, buttonVariants } from "@ui/button";
 import {
   Command,
   CommandEmpty,
@@ -37,6 +37,7 @@ import { useSession } from "next-auth/react";
 import { Skeleton } from "../ui/skeleton";
 import { ToastAction } from "@/components/ui/toast";
 import { useToast } from "@/components/ui/use-toast";
+import Link from "next/link";
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
   typeof PopoverTrigger
@@ -87,11 +88,13 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
     >
       <Popover open={open} onOpenChange={setOpen}>
         <div className="center flex justify-center rounded-lg border border-border">
-          <Button
-            variant="ghost"
-            size="sm"
-            className={cn("w-[175px] justify-start", className)}
-            disabled={reloading}
+          <Link
+            href={reloading ? "#" : `/workspace/${selectedWS.name}`}
+            className={cn(
+              buttonVariants({ variant: "ghost", size: "sm" }),
+              "w-[175px] justify-start",
+              className
+            )}
           >
             {reloading ? (
               <>
@@ -115,7 +118,7 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
                 {selectedWS.name}
               </>
             )}
-          </Button>
+          </Link>
           <PopoverTrigger asChild>
             <Button
               variant="ghost"
