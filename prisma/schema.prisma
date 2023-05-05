@@ -36,7 +36,7 @@ model App {
   activeWorkspaces Workspace[] @relation("AppWorkspace")
   idpartnerDev     DevPartner  @relation(fields: [devPartnerId], references: [id])
   devPartnerId     String
-  urlApp           String      @default("")
+  urlApp           String      @unique
 
   @@index([devPartnerId])
 }
