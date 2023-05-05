@@ -27,7 +27,7 @@ function SignIn({
         <Link href="/" className="my-4 text-4xl font-extrabold">
           Kodix
         </Link>
-        <Card className="w-[400px]">
+        <Card className="w-[275px] sm:w-[400px]">
           <CardHeader className="text-center">
             <CardTitle className="text-bold text-lg">
               Sign in to your account
