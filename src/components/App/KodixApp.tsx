@@ -1,6 +1,10 @@
 import { api } from "src/utils/api";
-import { Button } from "@ui/button";
+import { Button, buttonVariants } from "@ui/button";
+import { useSession } from "next-auth/react";
+import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
 
+import { ToastAction } from "@/components/ui/toast";
+import { useToast } from "@/components/ui/use-toast";
 import {
   Card,
   CardContent,
@@ -8,6 +12,28 @@ import {
   CardHeader,
   CardTitle,
 } from "@ui/card";
+import Link from "next/link";
+import { Label } from "@ui/label";
+import { Loader2, MoreHorizontal, Trash2 } from "lucide-react";
+import { Input } from "@ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuItem,
+} from "@ui/dropdown-menu";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@ui/dialog";
+import { DialogHeader } from "../ui/dialog";
 
 type Props = {
   id: string;
@@ -21,35 +47,114 @@ const KodixApp: React.FC<Props> = ({
   id,
   appName,
   appDescription,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   appUrl,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  installed = false,
+  installed,
 }) => {
+  const { data: session } = useSession();
+  const [open, onOpenChange] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+
   const ctx = api.useContext();
   const { mutate } = api.workspace.installApp.useMutation({
     onSuccess: () => {
-      void ctx.app.getAllWithInstalled.invalidate();
+      void ctx.app.getAll.invalidate();
+    },
+  });
+  const { mutate: uninstall } = api.workspace.uninstallApp.useMutation({
+    onSuccess: () => {
+      onOpenChange(false);
+      void ctx.app.getAll.invalidate();
+      setLoading(false);
+      toast({
+        variant: "default",
+        title: `App ${appName} uninstalled`,
+        description: "The app was permenantely deleted.",
+      });
     },
   });
 
   return (
-    <Card className="w-[350px]">
-      <CardHeader>
-        <CardTitle>{appName}</CardTitle>
-        <CardDescription>{appDescription}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form>
-          <div className="grid w-full items-center gap-4">
-            <div className="flex flex-col space-y-1.5">
-              <Button onClick={() => mutate({ appId: id })}>Install</Button>
-            </div>
-            <div className="flex flex-col space-y-1.5"></div>
+    <>
+      <Card className="max-w-sm">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="">{appName} </CardTitle>
+
+          {session && installed && (
+            <Dialog open={open} onOpenChange={onOpenChange}>
+              <DropdownMenu>
+                <DropdownMenuTrigger>
+                  <Button variant="ghost" size="sm" className="">
+                    <MoreHorizontal className="h-4 w-4" />
+                    <span className="sr-only">Open dialog</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DialogTrigger asChild>
+                    <DropdownMenuItem>
+                      <Trash2 className="mr-2 h-4 w-4 text-destructive" />
+
+                      <span>Uninstall from workspace</span>
+                    </DropdownMenuItem>
+                  </DialogTrigger>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Uninstall {appName} from workspace</DialogTitle>
+                  <DialogDescription>
+                    Are you sure you want to uninstall {appName} from
+                    {" " + session.user.activeWorkspaceName}?
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => onOpenChange(false)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      void uninstall({ appId: id });
+                      setLoading(true);
+                    }}
+                    variant="destructive"
+                  >
+                    {loading && (
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    )}
+                    Uninstall
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
+        </CardHeader>
+        <CardContent>
+          <CardDescription className="mb-4">{appDescription}</CardDescription>
+          <div className="flex w-full flex-col">
+            {!session ? (
+              <Link
+                href="/signIn"
+                className={buttonVariants({ variant: "default" })}
+              >
+                Install
+              </Link>
+            ) : installed ? (
+              <Link
+                href={`app/${appUrl}`}
+                className={buttonVariants({ variant: "default" })}
+              >
+                Open
+              </Link>
+            ) : (
+              <Button onClick={() => void mutate({ appId: id })}>
+                Install
+              </Button>
+            )}
           </div>
-        </form>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </>
   );
 };
 

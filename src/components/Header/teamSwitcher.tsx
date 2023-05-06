@@ -70,7 +70,7 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
     }
   );
 
-  const { mutateAsync } = api.user.switchActiveWorkspace.useMutation({
+  const { mutateAsync: mutate } = api.user.switchActiveWorkspace.useMutation({
     onSuccess: () => {
       Router.reload();
     },
@@ -149,7 +149,7 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
                       });
                       setOpen(false);
                       value !== selectedWS.id
-                        ? void mutateAsync({ workspaceId: ws.id })
+                        ? void mutate({ workspaceId: ws.id })
                         : null;
                       setReloading(true);
                     }}

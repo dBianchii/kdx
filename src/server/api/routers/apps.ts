@@ -8,41 +8,27 @@ export interface AppWithInstalled extends App {
 
 export const appsRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
-    const app = await ctx.prisma.app.findMany();
-    return app;
-  }),
-  /**
-   * Returns all apps, but with an extra boolean indicating if they are installed in the active workspace for the user
-   */
-  getAllWithInstalled: publicProcedure.query(async ({ ctx }) => {
     const apps = await ctx.prisma.app.findMany({
       include: {
-        activeWorkspaces: true,
+        activeWorkspaces: ctx.session
+          ? {
+              where: {
+                id: ctx.session.user.activeWorkspaceId,
+              },
+            }
+          : undefined,
       },
     });
+
     if (!apps)
       throw new TRPCError({
-        message: "No Apps Found",
-        code: "INTERNAL_SERVER_ERROR",
+        code: "NOT_FOUND",
+        message: "No apps found",
       });
 
-    const _apps: AppWithInstalled[] = apps.map((app) => {
-      let installed = false;
-      app.activeWorkspaces.forEach((workspace) => {
-        if (workspace.id === ctx.session?.user.activeWorkspaceId) {
-          installed = true;
-        }
-      });
-      return {
-        ...app,
-        installed,
-      };
-    });
-
-    return _apps;
+    return apps;
   }),
-
-  getInstalledApps: protectedProcedure.query(async ({ ctx }) => {
+  getInstalled: protectedProcedure.query(async ({ ctx }) => {
     const apps = await ctx.prisma.app.findMany({
       where: {
         activeWorkspaces: {
@@ -52,6 +38,13 @@ export const appsRouter = createTRPCRouter({
         },
       },
     });
+
+    if (!apps)
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "No apps found",
+      });
+
     return apps;
   }),
 });

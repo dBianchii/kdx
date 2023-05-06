@@ -131,4 +131,26 @@ export const workspaceRouter = createTRPCRouter({
 
       return installedApp;
     }),
+  uninstallApp: protectedProcedure
+    .input(
+      z.object({
+        appId: z.string().cuid(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const uninstalledApp = await ctx.prisma.workspace.update({
+        where: {
+          id: ctx.session.user.activeWorkspaceId,
+        },
+        data: {
+          activeApps: {
+            disconnect: {
+              id: input.appId,
+            },
+          },
+        },
+      });
+
+      return uninstalledApp;
+    }),
 });

@@ -23,12 +23,14 @@ declare module "next-auth" {
       // ...other properties
       // role: UserRole;
       activeWorkspaceId: string; // Might need fix
+      activeWorkspaceName: string;
     } & DefaultSession["user"];
   }
 
   interface User {
     // ...other properties
     activeWorkspaceId: string; // Might need fix
+    activeWorkspaceName: string;
   }
 }
 
@@ -43,6 +45,8 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = user.id;
         session.user.activeWorkspaceId = user.activeWorkspaceId; // Might need fix
+
+        session.user.activeWorkspaceName = user.activeWorkspaceName;
       }
       return session;
     },
