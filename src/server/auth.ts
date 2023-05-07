@@ -41,12 +41,17 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   callbacks: {
-    session({ session, user }) {
+    async session({ session, user }) {
       if (session.user) {
+        const workspace = await prisma.workspace.findUnique({
+          where: {
+            id: user.activeWorkspaceId,
+          },
+        });
         session.user.id = user.id;
         session.user.activeWorkspaceId = user.activeWorkspaceId; // Might need fix
 
-        session.user.activeWorkspaceName = user.activeWorkspaceName;
+        session.user.activeWorkspaceName = workspace?.name ?? "";
       }
       return session;
     },

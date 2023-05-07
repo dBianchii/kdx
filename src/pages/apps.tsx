@@ -1,11 +1,12 @@
 import { H1, H4 } from "@ui/typography";
-import AppComponent from "../components/App/KodixApp";
+import KodixApp from "../components/App/KodixApp";
 import { api } from "../utils/api";
-import { useSession } from "next-auth/react";
+import { useEffect } from "react";
 
 export default function Apps() {
-  const { data: session } = useSession();
-  const { data } = api.app.getInstalled.useQuery();
+  const { data: apps } = api.app.getInstalled.useQuery();
+
+  useEffect(() => void {}, [apps]);
 
   return (
     <div className="p-4">
@@ -14,10 +15,10 @@ export default function Apps() {
       <br />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {data &&
-          data.map((app) => (
+        {apps &&
+          apps.map((app) => (
             <div key={app.id}>
-              <AppComponent
+              <KodixApp
                 id={app.id}
                 appName={app.name}
                 appDescription={app.description}

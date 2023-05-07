@@ -1,9 +1,6 @@
 import { api } from "src/utils/api";
 import { Button, buttonVariants } from "@ui/button";
 import { useSession } from "next-auth/react";
-import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
-
-import { ToastAction } from "@/components/ui/toast";
 import { useToast } from "@/components/ui/use-toast";
 import {
   Card,
@@ -13,15 +10,11 @@ import {
   CardTitle,
 } from "@ui/card";
 import Link from "next/link";
-import { Label } from "@ui/label";
 import { Loader2, MoreHorizontal, Trash2 } from "lucide-react";
-import { Input } from "@ui/input";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuItem,
 } from "@ui/dropdown-menu";
 import { useState } from "react";
@@ -59,6 +52,10 @@ const KodixApp: React.FC<Props> = ({
   const { mutate } = api.workspace.installApp.useMutation({
     onSuccess: () => {
       void ctx.app.getAll.invalidate();
+      toast({
+        variant: "default",
+        title: `App ${appName} installed`,
+      });
     },
   });
   const { mutate: uninstall } = api.workspace.uninstallApp.useMutation({
@@ -69,7 +66,6 @@ const KodixApp: React.FC<Props> = ({
       toast({
         variant: "default",
         title: `App ${appName} uninstalled`,
-        description: "The app was permenantely deleted.",
       });
     },
   });
@@ -102,9 +98,9 @@ const KodixApp: React.FC<Props> = ({
 
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Uninstall {appName} from workspace</DialogTitle>
-                  <DialogDescription>
-                    Are you sure you want to uninstall {appName} from
+                  <DialogTitle>Confirm</DialogTitle>
+                  <DialogDescription className="py-4">
+                    Are you sure you would like to uninstall {appName} from
                     {" " + session.user.activeWorkspaceName}?
                   </DialogDescription>
                 </DialogHeader>
