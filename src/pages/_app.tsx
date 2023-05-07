@@ -5,8 +5,6 @@ import { SessionProvider } from "next-auth/react";
 import { api } from "../utils/api";
 
 import "../styles/globals.css";
-
-import { type ReactNode, Fragment } from "react";
 import Header from "@/components/Header/Header";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TailwindIndicator } from "@/components/tailwind-indicator";
@@ -23,15 +21,18 @@ const MyApp: AppType<{ session: Session | null }> = ({
   const isLayoutNotNeeded = !routesLayoutNotNeeded.includes(
     (appProps.router as { pathname: string }).pathname
   );
-  const LayoutComponent = isLayoutNotNeeded ? Layout : Fragment;
 
   return (
     <SessionProvider session={session}>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-        <LayoutComponent>
+        {isLayoutNotNeeded && <Header />}
+
+        <div className="h-screen overflow-clip border p-8">
           <Component {...pageProps} />
+
           <Toaster />
-        </LayoutComponent>
+        </div>
+        {isLayoutNotNeeded && <Footer />}
 
         {/* UI Design Helpers */}
         {process.env.NODE_ENV !== "production" && (
@@ -46,15 +47,5 @@ const MyApp: AppType<{ session: Session | null }> = ({
     </SessionProvider>
   );
 };
-
-function Layout({ children }: { children?: ReactNode }) {
-  return (
-    <>
-      <Header />
-      {children}
-      <Footer />
-    </>
-  );
-}
 
 export default api.withTRPC(MyApp);

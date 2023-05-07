@@ -1,17 +1,18 @@
 import { useSession } from "next-auth/react";
 import KodixApp from "../components/App/KodixApp";
 import { api } from "../utils/api";
-import { H1, H4 } from "@ui/typography";
+import { H1, Lead } from "@ui/typography";
+import { Separator } from "@ui/separator";
 
 export default function Marketplace() {
   const { data: session } = useSession();
   const { data } = api.app.getAll.useQuery();
 
   return (
-    <div className="p-4">
+    <>
       <H1>Marketplace</H1>
-      <H4>People stopped telling jokes</H4>
-      <br />
+      <Lead>Take a look at all available apps, and install them</Lead>
+      <Separator className="my-4" />
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {data &&
           data.map((app) => (
@@ -31,6 +32,6 @@ export default function Marketplace() {
             />
           ))}
       </div>
-    </div>
+    </>
   );
 }
