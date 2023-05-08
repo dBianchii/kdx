@@ -30,7 +30,7 @@ export const todoRouter = createTRPCRouter({
   getAllForLoggedUser: protectedProcedure.query(async ({ ctx }) => {
     const todos = await ctx.prisma.todo.findMany({
       where: {
-        userId: ctx.session.user.id,
+        assignedToUserId: ctx.session.user.id,
         workspaceId: ctx.session.user.activeWorkspaceId,
       },
     });
