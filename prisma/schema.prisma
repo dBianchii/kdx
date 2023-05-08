@@ -77,14 +77,14 @@ model Todo {
   status      Status?
   reminder    Boolean?
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
+  assignedToUserId String
+  assignedToUser   User   @relation(fields: [assignedToUserId], references: [id])
 
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
 
   @@index([workspaceId])
-  @@index([userId])
+  @@index([assignedToUserId])
 }
 
 // Necessary for Next auth

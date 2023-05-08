@@ -1,12 +1,14 @@
 import { Separator } from "@ui/separator";
 import { Button } from "@ui/button";
 import { H1 } from "@ui/typography";
+import type { User } from "@prisma/client";
 import {
   Check,
   CheckCircle2,
   CircleDot,
   CircleOff,
   CircleSlash,
+  LucideUser,
   Plus,
   PlusCircle,
   Settings2,
@@ -26,7 +28,7 @@ import {
 } from "@ui/dialog";
 import { Input } from "@ui/input";
 import { Label } from "@ui/label";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Popover,
@@ -45,6 +47,8 @@ import {
 import { cn } from "@/components/ui/lib/utils";
 import workspaces from "../workspaces";
 import { useSession } from "next-auth/react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserCircleIcon } from "@heroicons/react/24/outline";
 
 export default function Todo() {
   // const { data: todos } = api.todo.getAllForLoggedUser.useQuery();
@@ -74,13 +78,24 @@ function CreateTaskDialog() {
   //   },
   // });
 
-  const { data: workspace } = api.workspace.getAllForLoggedUser.useQuery();
+  const { data: session } = useSession();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("TODO");
   const [dueDate, setDueDate] = useState(new Date());
   const [priority, setPriority] = useState(1);
+  const [assignedToUserId, setAssignedToUserId] = useState("");
+
+  const { data: workspace } = api.workspace.getActiveWorkspace.useQuery(
+    undefined,
+    {
+      onSuccess: (data) => {
+        if (!data || !data.users[0]) return;
+        setAssignedToUserId(data.users[0].id);
+      },
+    }
+  );
 
   return (
     <Dialog>
@@ -90,7 +105,7 @@ function CreateTaskDialog() {
           Create Task
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="outline outline-ring sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>New Task</DialogTitle>
         </DialogHeader>
@@ -105,10 +120,17 @@ function CreateTaskDialog() {
             className="my-2"
             placeholder="Add description..."
             onChange={(e) => setDescription(e.target.value)}
-          ></Textarea>
-          <div className="flex flex-row gap-3">
+          >
+            {description}
+          </Textarea>
+          <div className="flex flex-row gap-1">
             <StatusPopoverButton status={status} setStatus={setStatus} />
             <PriorityButton priority={priority} setPriority={setPriority} />
+            <AssigneeButton
+              assignedToUserId={assignedToUserId}
+              setAssignedToUserId={setAssignedToUserId}
+              users={workspace?.users ?? []}
+            />
           </div>
         </DialogDescription>
         <DialogFooter>
@@ -315,6 +337,92 @@ const PriorityButton = ({
                 <HighIcon />
                 High
               </CommandItem>
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
+const AssigneeButton = ({
+  assignedToUserId,
+  setAssignedToUserId,
+  users,
+}: {
+  assignedToUserId: string;
+  setAssignedToUserId: React.Dispatch<React.SetStateAction<string>>;
+  users: User[];
+}) => {
+  const [open, setOpen] = useState(false);
+  useEffect(() => void {}, [assignedToUserId]);
+  const user = users.find((x) => x.id === assignedToUserId);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="xs">
+          <span className="sr-only">Open assign user popover</span>
+
+          {user ? (
+            <>
+              <Avatar className="mr-2 h-4 w-4">
+                <AvatarImage
+                  src={user.image ?? ""}
+                  alt={user.name ?? "" + " avatar"}
+                />
+                <AvatarFallback>
+                  <UserCircleIcon />
+                </AvatarFallback>
+              </Avatar>
+              {user.name}
+            </>
+          ) : (
+            <>
+              <UserCircleIcon className="mr-2 h-4 w-4" />
+              Assignee
+            </>
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-300 p-0" side="bottom" align={"start"}>
+        <Command>
+          <CommandInput placeholder="Assign to user..." />
+          <CommandList
+            onSelect={() => {
+              setOpen(false);
+            }}
+          >
+            <CommandGroup>
+              <CommandItem
+                onSelect={() => {
+                  setAssignedToUserId("");
+                  setOpen(false);
+                }}
+              >
+                <UserCircleIcon className="mr-2 h-4 w-4" />
+                Unassigned
+              </CommandItem>
+              {users.map((user) => (
+                <CommandItem
+                  key={user.id}
+                  onSelect={() => {
+                    setAssignedToUserId(user.id);
+                    setOpen(false);
+                  }}
+                >
+                  <Avatar className="mr-2 h-4 w-4">
+                    <AvatarImage
+                      src={user.image ?? ""}
+                      alt={user.image ?? "" + " avatar"}
+                    />
+                    <AvatarFallback>
+                      <UserCircleIcon />
+                    </AvatarFallback>
+                  </Avatar>
+                  {user.name}
+                </CommandItem>
+              ))}
             </CommandGroup>
           </CommandList>
         </Command>
