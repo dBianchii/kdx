@@ -19,7 +19,7 @@ export const todoRouter = createTRPCRouter({
           description: input.description,
           dueDate: input.dueDate,
           reminder: input.reminder,
-          userId: ctx.session.user.id,
+          assignedToUserId: ctx.session.user.id,
           workspaceId: ctx.session.user.activeWorkspaceId,
           priority: input.priority,
         },
