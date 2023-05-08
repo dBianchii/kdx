@@ -56,9 +56,11 @@ model Technology {
 }
 
 enum Status {
-  COMPLETED
+  TODO
   INPROGRESS
-  PENDING
+  INREVIEW
+  DONE
+  CANCELED
 }
 
 model Todo {
@@ -66,7 +68,11 @@ model Todo {
   title       String
   description String?
   dueDate     DateTime?
-  priority    Int? //1 - LOW, 2 - MEDIUM, 3 high
+  //** 0 - No Priority
+  //** 1 - Low
+  //** 2 - Medium
+  //** 3 - High
+  priority    Int? //0 1 - LOW, 2 - MEDIUM, 3 high
   category    String?
   status      Status?
   reminder    Boolean?

@@ -62,31 +62,22 @@ export const workspaceRouter = createTRPCRouter({
       });
       return workspace;
     }),
-  getActiveWorkspace: protectedProcedure
-    .input(z.object({ userId: z.string().cuid() }))
-    .query(async ({ ctx, input }) => {
-      const user = await ctx.prisma.user.findUnique({
-        where: {
-          id: input.userId,
-        },
-        include: {
-          activeWorkspace: true,
-        },
+  getActiveWorkspace: protectedProcedure.query(async ({ ctx }) => {
+    const workspace = await ctx.prisma.workspace.findUnique({
+      where: {
+        id: ctx.session.user.activeWorkspaceId,
+      },
+      include: {
+        users: true,
+      },
+    });
+    if (!workspace)
+      throw new TRPCError({
+        message: "No Workspace Found",
+        code: "NOT_FOUND",
       });
-
-      if (!user)
-        throw new TRPCError({
-          message: "No User Found",
-          code: "NOT_FOUND",
-        });
-      if (!user.activeWorkspace)
-        throw new TRPCError({
-          message: "No Active Workspace Found",
-          code: "NOT_FOUND",
-        });
-
-      return user.activeWorkspace;
-    }),
+    return workspace;
+  }),
   installApp: protectedProcedure
     .input(
       z.object({
