@@ -56,6 +56,28 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
+  events: {
+    createUser: async (message) => {
+      //Create a personal workspace for the user on signup, set it as their active workspace
+      const workspace = await prisma.workspace.create({
+        data: {
+          name: `${message.user.name ?? ""}'s Personal Workspace`,
+          users: {
+            connect: [{ id: message.user.id }],
+          },
+        },
+      });
+
+      await prisma.user.update({
+        where: {
+          id: message.user.id,
+        },
+        data: {
+          activeWorkspaceId: workspace.id,
+        },
+      });
+    },
+  },
   adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({

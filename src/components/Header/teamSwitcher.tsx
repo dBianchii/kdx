@@ -55,12 +55,18 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
     name: "",
   });
 
+  const { mutateAsync: mutate } = api.user.switchActiveWorkspace.useMutation({
+    onSuccess: () => {
+      Router.reload();
+    },
+  });
+
   const { data: workspaces } = api.workspace.getAllForLoggedUser.useQuery(
     undefined,
     {
       enabled: session?.user !== undefined,
-      onSuccess: (data) => {
-        const newSelectedWS = data.find((ws) => ws.id === selectedWS.id);
+      onSuccess: (workspace) => {
+        const newSelectedWS = workspace.find((ws) => ws.id === selectedWS.id);
         if (newSelectedWS === undefined) return;
         setSelectedWS({
           id: newSelectedWS.id,
@@ -69,12 +75,6 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
       },
     }
   );
-
-  const { mutateAsync: mutate } = api.user.switchActiveWorkspace.useMutation({
-    onSuccess: () => {
-      Router.reload();
-    },
-  });
 
   const [open, setOpen] = React.useState(false);
   const [showNewWorkspaceDialog, setShowNewWorkspaceDialog] =
@@ -219,13 +219,21 @@ export function AddWorkspaceDialog({
   const [loading, setLoading] = React.useState(false);
   const ctx = api.useContext();
   const { toast } = useToast();
+  const { mutate: switchActiveWorkspace } =
+    api.user.switchActiveWorkspace.useMutation({
+      onSuccess: () => {
+        Router.reload();
+      },
+    });
   const { mutateAsync } = api.workspace.create.useMutation({
-    onSuccess: (result) => {
-      void ctx.workspace.getAllForLoggedUser.invalidate();
+    onSuccess: (workspace) => {
+      switchActiveWorkspace({ workspaceId: workspace.id });
       onOpenChange(false);
+      setLoading(false);
+
       toast({
         variant: "default",
-        title: `Workspace ${result.name} created`,
+        title: `Workspace ${workspace.name} created`,
         description: "Successfully created a new workspace.",
         action: (
           <ToastAction disabled altText="Goto schedule to undo">
@@ -233,6 +241,7 @@ export function AddWorkspaceDialog({
           </ToastAction>
         ),
       });
+      void ctx.workspace.getAllForLoggedUser.invalidate();
     },
   });
   const [workspaceName, changeWorkspaceName] = React.useState("");

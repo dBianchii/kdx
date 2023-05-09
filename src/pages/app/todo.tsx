@@ -49,6 +49,7 @@ import workspaces from "../workspaces";
 import { useSession } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
+import { Calendar } from "@/components/ui/calendar";
 
 export default function Todo() {
   // const { data: todos } = api.todo.getAllForLoggedUser.useQuery();
@@ -83,7 +84,7 @@ function CreateTaskDialog() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("TODO");
-  const [dueDate, setDueDate] = useState(new Date());
+  const [dueDate, setDueDate] = useState<Date | undefined>(new Date());
   const [priority, setPriority] = useState(1);
   const [assignedToUserId, setAssignedToUserId] = useState("");
 
@@ -105,19 +106,19 @@ function CreateTaskDialog() {
           Create Task
         </Button>
       </DialogTrigger>
-      <DialogContent className="outline outline-ring sm:max-w-[600px]">
+      <DialogContent className="mb-64 outline outline-ring sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>New Task</DialogTitle>
         </DialogHeader>
         <DialogDescription>
           <Input
-            className="my-2"
+            className="my-2 border-none"
             type="text"
             placeholder="Task title..."
             onChange={(e) => setTitle(e.target.value)}
           ></Input>
           <Textarea
-            className="my-2"
+            className="my-2 border-none"
             placeholder="Add description..."
             onChange={(e) => setDescription(e.target.value)}
           >
@@ -131,6 +132,7 @@ function CreateTaskDialog() {
               setAssignedToUserId={setAssignedToUserId}
               users={workspace?.users ?? []}
             />
+            <DatePickerButton date={dueDate} setDate={setDueDate} />
           </div>
         </DialogDescription>
         <DialogFooter>
@@ -355,7 +357,6 @@ const AssigneeButton = ({
   users: User[];
 }) => {
   const [open, setOpen] = useState(false);
-  useEffect(() => void {}, [assignedToUserId]);
   const user = users.find((x) => x.id === assignedToUserId);
 
   return (
@@ -410,6 +411,7 @@ const AssigneeButton = ({
                     setAssignedToUserId(user.id);
                     setOpen(false);
                   }}
+                  value={user.id}
                 >
                   <Avatar className="mr-2 h-4 w-4">
                     <AvatarImage
@@ -426,6 +428,35 @@ const AssigneeButton = ({
             </CommandGroup>
           </CommandList>
         </Command>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
+const DatePickerButton = ({
+  date,
+  setDate,
+}: {
+  date: Date | undefined;
+  setDate: React.Dispatch<React.SetStateAction<Date | undefined>>;
+}) => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="xs">
+          {date?.getDay()}
+          <span className="sr-only">Open status popover</span>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-300 p-0" side="bottom" align={"start"}>
+        <Calendar
+          mode="single"
+          selected={date}
+          onSelect={setDate}
+          initialFocus
+        />
       </PopoverContent>
     </Popover>
   );
