@@ -25,22 +25,6 @@ const prisma = new PrismaClient();
       devPartnerId: kdxPartnerId,
       urlApp: "/todo",
     },
-    {
-      id: "clhb5q2kq000208lcbclw71in",
-      name: "Busca CEP",
-      description: "Este app busca os ceps",
-      subscriptionCost: 0,
-      devPartnerId: kdxPartnerId,
-      urlApp: "/ceps",
-    },
-    {
-      id: "clhb5rbl5000408lc5bhqc5hs",
-      name: "Gatinhos Dengosos",
-      description: "Este app busca gatinhos dengosos na sua rua",
-      subscriptionCost: 0,
-      devPartnerId: kdxPartnerId,
-      urlApp: "/gatinhosDengosos",
-    },
   ];
 
   for (const app of apps) {
