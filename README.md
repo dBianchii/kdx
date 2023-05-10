@@ -10,7 +10,7 @@ This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3
 
 ## Requirements
 - Node.JS LTS
-- Windows 11 (should work on MacOS and Linux without problems, but not tried yet)
+- Windows 11 or MacOS (should work on Linux or other Windows/MacOS versions without problems, but not tried yet)
 - VSCode (recommended)
 - ESLint VSCode extension (recommended)
 
