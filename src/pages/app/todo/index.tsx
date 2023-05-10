@@ -1,8 +1,6 @@
 import { Separator } from "@ui/separator";
 import { Button } from "@ui/button";
 import { addDays, format } from "date-fns";
-import { pt } from "date-fns/locale";
-
 import { H1 } from "@ui/typography";
 import type { Status, User } from "@prisma/client";
 import {
@@ -13,10 +11,7 @@ import {
   CircleDot,
   CircleOff,
   CircleSlash,
-  LucideUser,
   Plus,
-  PlusCircle,
-  Settings2,
   SignalHigh,
   SignalLow,
   SignalMedium,
@@ -33,8 +28,7 @@ import {
   DialogDescription,
 } from "@ui/dialog";
 import { Input } from "@ui/input";
-import { Label } from "@ui/label";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Popover,
@@ -43,31 +37,17 @@ import {
 } from "@/components/ui/popover";
 import {
   Command,
-  CommandDialog,
-  CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
-  CommandSeparator,
 } from "@/components/ui/command";
 import { cn } from "@/components/ui/lib/utils";
-import workspaces from "../../workspaces";
-import { useSession } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@ui/select";
-import { Badge } from "@/components/ui/badge";
-import type { ColumnDef } from "@tanstack/react-table";
-import { DataTable } from "./data-table";
-import { TodoColumns, columns } from "./columns";
+import { DataTable } from "@/components/Apps/Todo/data-table";
+import { columns } from "../../../components/Apps/Todo/columns";
 
 export default function Todo() {
   const { data: todos } = api.todo.getAllForLoggedUser.useQuery();
@@ -81,7 +61,7 @@ export default function Todo() {
   );
 }
 
-function CreateTaskDialogButton() {
+export function CreateTaskDialogButton() {
   function handleCreateTask() {
     createTask({
       title,
