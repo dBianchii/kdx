@@ -77,8 +77,8 @@ model Todo {
   status      Status?
   reminder    Boolean?
 
-  assignedToUserId String
-  assignedToUser   User   @relation(fields: [assignedToUserId], references: [id])
+  assignedToUserId String?
+  assignedToUser   User?   @relation(fields: [assignedToUserId], references: [id])
 
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id])

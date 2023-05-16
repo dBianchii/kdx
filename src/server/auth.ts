@@ -58,10 +58,11 @@ export const authOptions: NextAuthOptions = {
   },
   events: {
     createUser: async (message) => {
+      const firstName = message.user.name ? message.user.name.split("")[0] : "";
       //Create a personal workspace for the user on signup, set it as their active workspace
       const workspace = await prisma.workspace.create({
         data: {
-          name: `${message.user.name ?? ""}'s Personal Workspace`,
+          name: `${firstName ?? ""}'s Workspace`,
           users: {
             connect: [{ id: message.user.id }],
           },

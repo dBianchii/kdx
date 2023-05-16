@@ -27,7 +27,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         {isLayoutNotNeeded && <Header />}
 
-        <div className="h-screen overflow-clip border p-8">
+        <div className="overflow-clip border p-8">
           <Component {...pageProps} />
 
           <Toaster />
