@@ -70,6 +70,11 @@ export const todoRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "No Todos Found",
+      });
+
       const todo = await ctx.prisma.todo.update({
         where: {
           id: input.id,
