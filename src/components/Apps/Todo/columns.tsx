@@ -22,12 +22,32 @@ import {
 import { DatePickerIcon, DatePickerWithPresets } from "./DatePickerWithPresets";
 import { AssigneePopover } from "./AssigneePopover";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type RouterOutput = inferRouterOutputs<AppRouter>;
 export type TodoColumn = RouterOutput["todo"]["getAllForLoggedUser"][number];
 const columnHelper = createColumnHelper<TodoColumn>();
 
 export const columns = [
+  columnHelper.display({
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={table.getIsAllPageRowsSelected()}
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  }),
   columnHelper.accessor("priority", {
     cell: function Cell(info) {
       const [priority, setPriority] = useState<Priority>(0); //added "0" Just to make TS happy

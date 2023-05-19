@@ -115,7 +115,11 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
                       .join("")}
                   </AvatarFallback>
                 </Avatar>
-                {selectedWS.name}
+                {selectedWS.name.length > 19 ? (
+                  <span className="text-xs">{selectedWS.name}</span>
+                ) : (
+                  selectedWS.name
+                )}
               </>
             )}
           </Link>
