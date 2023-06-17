@@ -16,14 +16,15 @@ datasource db {
 }
 
 model Workspace {
-  id          String   @id @default(cuid())
+  id          String        @id @default(cuid())
   name        String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  users       User[]   @relation("UserWorkspace")
-  activeUsers User[]   @relation("UserActiveWorkspace")
-  activeApps  App[]    @relation("AppWorkspace")
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  users       User[]        @relation("UserWorkspace")
+  activeUsers User[]        @relation("UserActiveWorkspace")
+  activeApps  App[]         @relation("AppWorkspace")
   Todo        Todo[]
+  EventMaster EventMaster[]
 }
 
 model App {
@@ -87,6 +88,81 @@ model Todo {
   @@index([assignedToUserId])
 }
 
+model EventMaster {
+  id   String @id @default(cuid())
+  rule String
+
+  eventInfo   EventInfo?
+  eventInfoId String?
+
+  EventExceptions    EventException[]
+  EventCancellations EventCancellation[]
+  EventDone          EventDone[]
+
+  Workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  workspaceId String
+
+  @@index([workspaceId])
+}
+
+model EventInfo {
+  id          String  @id @default(cuid())
+  title       String
+  description String?
+
+  EventMaster   EventMaster? @relation(fields: [eventMasterId], references: [id])
+  eventMasterId String?      @unique
+
+  EventException EventException[]
+  EventDone      EventDone[]
+}
+
+model EventException {
+  id           String   @id @default(cuid())
+  originalDate DateTime
+  newDate      DateTime
+
+  EventMaster   EventMaster @relation(fields: [eventMasterId], references: [id])
+  eventMasterId String
+
+  EventInfo   EventInfo? @relation(fields: [eventInfoId], references: [id])
+  eventInfoId String?
+
+  @@index([eventMasterId])
+  @@index([eventInfoId])
+}
+
+model EventCancellation {
+  id           String   @id @default(cuid())
+  originalDate DateTime
+
+  EventMaster   EventMaster @relation(fields: [eventMasterId], references: [id])
+  eventMasterId String
+
+  @@index([eventMasterId])
+}
+
+model EventDone {
+  id           String   @id @default(cuid())
+  eventDate    DateTime
+  registerDate DateTime @default(now())
+  done         Boolean
+  details      String?
+
+  doneBy User   @relation(fields: [userId], references: [id])
+  userId String
+
+  EventMaster   EventMaster @relation(fields: [eventMasterId], references: [id])
+  eventMasterId String
+
+  EventInfo   EventInfo @relation(fields: [eventInfoId], references: [id])
+  eventInfoId String
+
+  @@index([eventMasterId])
+  @@index([userId])
+  @@index([eventInfoId])
+}
+
 // Necessary for Next auth
 model Account {
   id                String  @id @default(cuid())
@@ -129,6 +205,7 @@ model User {
   Todo              Todo[]
   activeWorkspaceId String?     @map("activeWorkspaceId")
   activeWorkspace   Workspace?  @relation("UserActiveWorkspace", fields: [activeWorkspaceId], references: [id])
+  EventDone         EventDone[]
 
   @@index([activeWorkspaceId])
 }
