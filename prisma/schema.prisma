@@ -92,7 +92,7 @@ model EventMaster {
   id   String @id @default(cuid())
   rule String
 
-  eventInfo   EventInfo?
+  eventInfo   EventInfo? @relation(fields: [eventInfoId], references: [id])
   eventInfoId String?
 
   EventExceptions    EventException[]
@@ -103,6 +103,7 @@ model EventMaster {
   workspaceId String
 
   @@index([workspaceId])
+  @@index([eventInfoId])
 }
 
 model EventInfo {
@@ -110,11 +111,9 @@ model EventInfo {
   title       String
   description String?
 
-  EventMaster   EventMaster? @relation(fields: [eventMasterId], references: [id])
-  eventMasterId String?      @unique
-
   EventException EventException[]
   EventDone      EventDone[]
+  EventMaster    EventMaster[]
 }
 
 model EventException {
