@@ -8,7 +8,7 @@
     "postinstall": "prisma generate",
     "lint": "next lint",
     "start": "next start",
-    "setupLocalDB": "tsx src/utils/setupLocalDB.ts"
+    "setupLocalDB": "tsx src/utils/setupLocalDB/setupLocalDB.ts"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.12",
@@ -36,6 +36,7 @@
     "classnames": "^2.3.2",
     "clsx": "^1.2.1",
     "cmdk": "^0.2.0",
+    "cuid": "^3.0.0",
     "date-fns": "^2.30.0",
     "lucide-react": "^0.161.0",
     "next": "^13.2.1",
