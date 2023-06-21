@@ -19,7 +19,10 @@ import {
   PriorityPopover,
   PriorityToTxt,
 } from "./PriorityPopover";
-import { DatePickerIcon, DatePickerWithPresets } from "./DatePickerWithPresets";
+import {
+  DatePickerIcon,
+  DatePickerWithPresets,
+} from "@/components/DatePickerWithPresets";
 import { AssigneePopover } from "./AssigneePopover";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
 import { Checkbox } from "@/components/ui/checkbox";

@@ -1,7 +1,3 @@
-import StatusPopover, {
-  StatusIcon,
-} from "@/components/Apps/Todo/StatusPopover";
-import { DataTable } from "@/components/Apps/Todo/data-table";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,17 +12,24 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { H1 } from "@/components/ui/typography";
-import { PopoverTrigger } from "@radix-ui/react-popover";
 import { Plus } from "lucide-react";
 import { Frequency } from "rrule";
 import { useState } from "react";
+import { DateTimePicker } from "@/components/date-time-picker/date-time-picker";
+import { type DateValue } from "react-aria";
+import { api } from "@/utils/api";
+import {
+  FrequencyToTxt,
+  FrequencyPopover,
+} from "@/components/FrequencyPopover";
+import { PopoverTrigger } from "@/components/ui/popover";
 
 export default function KodixCare() {
   console.log(Frequency);
 
   return (
     <>
-      <H1>Todo</H1>
+      <H1>Kodix Care</H1>
       <Separator className="my-4" />
       <CreateEventDialogButton />
       {/* <DataTable columns={columns} data={data ?? []} /> */}
@@ -37,13 +40,20 @@ export default function KodixCare() {
 function CreateEventDialogButton() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [dueDate, setDueDate] = useState<Date>();
-  const [assignedToUserId, setAssignedToUserId] = useState<string | null>("");
   const [open, setOpen] = useState(false);
 
-  function handleCreateEvent() {
-    console.log("handleCreateEvent");
-  }
+  const [startDate, setStartDate] = useState<DateValue | null>(null);
+  const [endDate, setEndDate] = useState<DateValue | null>(null);
+  const [frequency, setFrequency] = useState<Frequency | null>(null);
+  const handleStartDateChange = (date: DateValue | null) => {
+    setStartDate(date);
+  };
+  const handleEndDateChange = (date: DateValue | null) => {
+    setEndDate(date);
+  };
+
+  const { mutate: createEvent } = api.event.create.useMutation();
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -52,26 +62,68 @@ function CreateEventDialogButton() {
           Create Event
         </Button>
       </DialogTrigger>
+
       <DialogContent className="mb-64 sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>New Event</DialogTitle>
         </DialogHeader>
         <DialogDescription>
           <Input
-            className="my-2 border-none"
+            className="my-2"
             type="text"
             placeholder="Task title..."
             onChange={(e) => setTitle(e.target.value)}
           ></Input>
+          <div className="my-2 flex flex-row gap-4">
+            <div className="flex flex-col gap-1">
+              From
+              <DateTimePicker
+                granularity="minute"
+                value={startDate}
+                onChange={handleStartDateChange}
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              To
+              <DateTimePicker
+                granularity="minute"
+                value={endDate}
+                onChange={handleEndDateChange}
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              Frequency
+              <FrequencyPopover setFrequency={setFrequency}>
+                <PopoverTrigger>
+                  <Button variant="outline" size="xs">
+                    {FrequencyToTxt(frequency)}
+                  </Button>
+                </PopoverTrigger>
+              </FrequencyPopover>
+            </div>
+          </div>
           <Textarea
-            className="my-2 border-none"
+            className="my-4 border-none"
             placeholder="Add description..."
             onChange={(e) => setDescription(e.target.value)}
           ></Textarea>
-          <div className="flex flex-row gap-1"></div>
         </DialogDescription>
         <DialogFooter>
-          <Button type="submit" size="xs" onClick={handleCreateEvent}>
+          <Button
+            type="submit"
+            size="xs"
+            onClick={() => {
+              if (!startDate || !endDate) return;
+              createEvent({
+                title,
+                description,
+                startDate: startDate.toDate("UTC"),
+                endDate: endDate.toDate("UTC"),
+                frequency: Frequency.DAILY,
+              });
+              setOpen(false);
+            }}
+          >
             Create task
           </Button>
         </DialogFooter>

@@ -17,11 +17,7 @@ import {
 import { Input } from "@ui/input";
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { PopoverTrigger } from "@/components/ui/popover";
 import {
   type Priority,
   PriorityIcon,
@@ -31,14 +27,7 @@ import {
 import {
   DatePickerIcon,
   DatePickerWithPresets,
-} from "@/components/Apps/Todo/DatePickerWithPresets";
-import {
-  Command,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
+} from "@/components/DatePickerWithPresets";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
 import { DataTable } from "@/components/Apps/Todo/data-table";
