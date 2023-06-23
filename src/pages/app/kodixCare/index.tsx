@@ -120,6 +120,7 @@ function CreateEventDialogButton() {
                 startDate: startDate.toDate("UTC"),
                 endDate: endDate.toDate("UTC"),
                 frequency: Frequency.DAILY,
+                dateUntil: new Date(),
               });
               setOpen(false);
             }}
