@@ -19,15 +19,16 @@ import { cn } from "@/components/ui/lib/utils";
 import { Button } from "@/components/ui/button";
 
 /**
- * To use this component, make sure you wrap it around a PopoverTrigger component.
- * To activate the StatusPopover component from within a Context Menu or Dropdown Menu, you must encase the Context Menu or Dropdown Menu component on the StatusPopover component.
+ * @description You can optionally input a button to overwrite the default button trigger.
  */
 export default function StatusPopover({
   status,
   setStatus,
+  children,
 }: {
   status: Status;
   setStatus: (status: Status) => void;
+  children?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const statusTxt = StatusToText(status);
@@ -35,11 +36,13 @@ export default function StatusPopover({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm">
-          <StatusIcon status={status} className={"mr-2"} />
-          {statusTxt}
-          <span className="sr-only">Open status popover</span>
-        </Button>
+        {children ?? (
+          <Button variant="outline" size="sm">
+            <StatusIcon status={status} className={"mr-2"} />
+            {statusTxt}
+            <span className="sr-only">Open status popover</span>
+          </Button>
+        )}
       </PopoverTrigger>
       <PopoverContent className="w-300 p-0" side="bottom" align={"start"}>
         <Command>

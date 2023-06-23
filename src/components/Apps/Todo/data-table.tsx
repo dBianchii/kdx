@@ -7,17 +7,10 @@ import {
   useReactTable,
   getPaginationRowModel,
   getFilteredRowModel,
-  ColumnFiltersState,
+  type ColumnFiltersState,
 } from "@tanstack/react-table";
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@ui/table";
+import { Table, TableBody, TableCell, TableRow } from "@ui/table";
 import { CreateTaskDialogButton } from "@/pages/app/todo";
 import {
   ContextMenu,
@@ -25,10 +18,10 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { Button } from "@/components/ui/button";
 import { DataTablePagination } from "@/components/pagination";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { api } from "@/utils/api";
 
 interface DataTableProps<TData> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -38,6 +31,7 @@ interface DataTableProps<TData> {
 
 export function DataTable<TData>({ columns, data }: DataTableProps<TData>) {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const { data: workspace } = api.workspace.getActiveWorkspace.useQuery();
 
   const table = useReactTable({
     data,
@@ -48,6 +42,9 @@ export function DataTable<TData>({ columns, data }: DataTableProps<TData>) {
     getFilteredRowModel: getFilteredRowModel(),
     state: {
       columnFilters,
+    },
+    meta: {
+      workspace: workspace,
     },
   });
 
@@ -76,10 +73,10 @@ export function DataTable<TData>({ columns, data }: DataTableProps<TData>) {
                     <ContextMenuTrigger className="contents">
                       {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id}>
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
+                          {flexRender(cell.column.columnDef.cell, {
+                            ...cell.getContext(),
+                            workspace: "a",
+                          })}
                         </TableCell>
                       ))}
                     </ContextMenuTrigger>

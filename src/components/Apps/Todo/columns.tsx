@@ -5,7 +5,8 @@ import { Avatar, AvatarImage, AvatarFallback } from "@ui/avatar";
 import { type inferRouterOutputs } from "@trpc/server";
 
 import { type AppRouter } from "@/server/api/root";
-import { createColumnHelper } from "@tanstack/react-table";
+
+import { RowData, createColumnHelper } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
 import StatusPopover, { StatusIcon, StatusToText } from "./StatusPopover";
@@ -30,7 +31,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 type RouterOutput = inferRouterOutputs<AppRouter>;
 export type TodoColumn = RouterOutput["todo"]["getAllForLoggedUser"][number];
 const columnHelper = createColumnHelper<TodoColumn>();
+type workspace = RouterOutput["workspace"]["getActiveWorkspace"];
 
+declare module "@tanstack/react-table" {
+  interface TableMeta<TData extends RowData> {
+    workspace: workspace | undefined;
+  }
+}
 export const columns = [
   columnHelper.display({
     id: "select",
@@ -94,14 +101,15 @@ export const columns = [
 
       return (
         <div className="text-left">
-          <PriorityPopover setPriority={handlePriorityChange}>
-            <PopoverTrigger>
-              <Button variant="ghost" size="sm">
-                <PriorityIcon priority={priority} className="mr-2" />
-                {PriorityToTxt(priority)}
-                <span className="sr-only">Open priority popover</span>
-              </Button>
-            </PopoverTrigger>
+          <PriorityPopover
+            priority={priority}
+            setPriority={handlePriorityChange}
+          >
+            <Button variant="ghost" size="sm">
+              <PriorityIcon priority={priority} className="mr-2" />
+              {PriorityToTxt(priority)}
+              <span className="sr-only">Open priority popover</span>
+            </Button>
           </PriorityPopover>
         </div>
       );
@@ -151,10 +159,13 @@ export const columns = [
       const statusTxt = StatusToText(status);
 
       return (
-        <StatusPopover
-          setStatus={handleStatusChange}
-          status={status}
-        ></StatusPopover>
+        <StatusPopover setStatus={handleStatusChange} status={status}>
+          <Button variant="ghost" size="sm">
+            <StatusIcon status={status} className={"mr-2"} />
+            {statusTxt}
+            <span className="sr-only">Open status popover</span>
+          </Button>
+        </StatusPopover>
       );
     },
   }),
@@ -235,8 +246,6 @@ export const columns = [
         if (value) setAssignedToUserId(value.id);
       }, [value]);
 
-      const { data: workspace } = api.workspace.getActiveWorkspace.useQuery();
-
       const ctx = api.useContext();
       const { mutate: updateTodo } = api.todo.update.useMutation({
         async onMutate(newData) {
@@ -268,40 +277,14 @@ export const columns = [
           assignedToUserId: newAssignedToUserId,
         });
       }
-      const user = (workspace?.users ?? []).find(
-        (x) => x.id === assignedToUserId
-      );
 
       return (
         <div className="text-right">
           <AssigneePopover
+            assignedToUserId={assignedToUserId}
             setAssignedToUserId={handleAssignedToUserChange}
-            users={workspace?.users ?? []}
-          >
-            <PopoverTrigger asChild>
-              {user ? (
-                <div>
-                  <Avatar className="h-6 w-6">
-                    <AvatarImage
-                      src={user.image ?? undefined}
-                      alt={user.name ? user.name + " avatar" : ""}
-                    />
-                    <AvatarFallback>
-                      {user.name &&
-                        user.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
-              ) : (
-                <div>
-                  <UserCircleIcon className="h-6 w-6 text-foreground/70" />
-                </div>
-              )}
-            </PopoverTrigger>
-          </AssigneePopover>
+            users={info.table.options.meta?.workspace?.users ?? []}
+          />
         </div>
       );
     },

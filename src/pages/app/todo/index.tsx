@@ -2,8 +2,8 @@ import { Separator } from "@ui/separator";
 import { Button } from "@ui/button";
 import { format } from "date-fns";
 import { H1 } from "@ui/typography";
-import type { Status, User } from "@prisma/client";
-import { CalendarIcon, Plus, X } from "lucide-react";
+import type { Status } from "@prisma/client";
+import { Plus, X } from "lucide-react";
 import { api } from "@/utils/api";
 import {
   DialogHeader,
@@ -109,7 +109,7 @@ export function CreateTaskDialogButton() {
           ></Textarea>
           <div className="flex flex-row gap-1">
             <StatusPopover setStatus={setStatus} status={status} />
-            <PriorityPopover setPriority={setPriority}>
+            <PriorityPopover priority={priority} setPriority={setPriority}>
               <PopoverTrigger asChild>
                 <Button variant="outline" size="sm">
                   <PriorityIcon priority={priority} className={"mr-2"} />
@@ -119,34 +119,33 @@ export function CreateTaskDialogButton() {
               </PopoverTrigger>
             </PriorityPopover>
             <AssigneePopover
+              assignedToUserId={assignedToUserId}
               setAssignedToUserId={setAssignedToUserId}
               users={workspace?.users ?? []}
             >
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <span className="sr-only">Open assign user popover</span>
+              <Button variant="outline" size="sm">
+                <span className="sr-only">Open assign user popover</span>
 
-                  {user ? (
-                    <>
-                      <Avatar className="mr-2 h-4 w-4">
-                        <AvatarImage
-                          src={user.image ?? ""}
-                          alt={user.name ?? "" + " avatar"}
-                        />
-                        <AvatarFallback>
-                          <UserCircleIcon />
-                        </AvatarFallback>
-                      </Avatar>
-                      {user.name}
-                    </>
-                  ) : (
-                    <>
-                      <UserCircleIcon className="mr-2 h-4 w-4" />
-                      Assignee
-                    </>
-                  )}
-                </Button>
-              </PopoverTrigger>
+                {user ? (
+                  <>
+                    <Avatar className="mr-2 h-4 w-4">
+                      <AvatarImage
+                        src={user.image ?? ""}
+                        alt={user.name ?? "" + " avatar"}
+                      />
+                      <AvatarFallback>
+                        <UserCircleIcon />
+                      </AvatarFallback>
+                    </Avatar>
+                    {user.name}
+                  </>
+                ) : (
+                  <>
+                    <UserCircleIcon className="mr-2 h-4 w-4" />
+                    Assignee
+                  </>
+                )}
+              </Button>
             </AssigneePopover>
             <DatePickerWithPresets date={dueDate} setDate={setDueDate}>
               <PopoverTrigger asChild>

@@ -1,9 +1,6 @@
-import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
-import { TRPCError } from "@trpc/server";
-import { datetime, RRule, Frequency, RRuleSet, rrulestr } from "rrule";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { RRule, Frequency, RRuleSet, rrulestr } from "rrule";
 import { z } from "zod";
-import type { EventInfo } from "@prisma/client";
-import { ca } from "date-fns/locale";
 
 function generateRule(
   startDate: Date,
@@ -97,7 +94,7 @@ export const eventRouter = createTRPCRouter({
         });
       });
 
-      //Handling Exceptions
+      //Handling Exceptions and Cancelations
       const eventExceptions = await ctx.prisma.eventException.findMany({
         where: {
           OR: {
@@ -170,7 +167,6 @@ export const eventRouter = createTRPCRouter({
                 calendarTask.date = foundException.newDate;
               } else {
                 //Temos exclusão do calendarTask
-                //Como que eu excluo este calendarTask do array???
                 return null;
               }
             }
