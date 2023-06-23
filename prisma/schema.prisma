@@ -94,8 +94,8 @@ model EventMaster {
   DateStart       DateTime?
   DateUntil       DateTime
 
-  eventInfo   EventInfo? @relation(fields: [eventInfoId], references: [id])
-  eventInfoId String?
+  eventInfo   EventInfo @relation(fields: [eventInfoId], references: [id])
+  eventInfoId String
 
   EventExceptions    EventException[]
   EventCancellations EventCancellation[]
