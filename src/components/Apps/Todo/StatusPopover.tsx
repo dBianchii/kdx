@@ -35,7 +35,7 @@ export default function StatusPopover({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="xs">
+        <Button variant="outline" size="sm">
           <StatusIcon status={status} className={"mr-2"} />
           {statusTxt}
           <span className="sr-only">Open status popover</span>

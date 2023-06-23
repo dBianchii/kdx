@@ -57,7 +57,7 @@ function CreateEventDialogButton() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="xs">
+        <Button variant="outline" size="sm">
           <Plus className="mr-2 h-4 w-4" />
           Create Event
         </Button>
@@ -95,7 +95,7 @@ function CreateEventDialogButton() {
               Frequency
               <FrequencyPopover setFrequency={setFrequency}>
                 <PopoverTrigger>
-                  <Button variant="outline" size="xs">
+                  <Button variant="outline" size="sm">
                     {FrequencyToTxt(frequency)}
                   </Button>
                 </PopoverTrigger>
@@ -111,7 +111,7 @@ function CreateEventDialogButton() {
         <DialogFooter>
           <Button
             type="submit"
-            size="xs"
+            size="sm"
             onClick={() => {
               if (!startDate || !endDate) return;
               createEvent({

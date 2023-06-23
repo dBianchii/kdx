@@ -96,7 +96,7 @@ export const columns = [
         <div className="text-left">
           <PriorityPopover setPriority={handlePriorityChange}>
             <PopoverTrigger>
-              <Button variant="ghost" size="xs">
+              <Button variant="ghost" size="sm">
                 <PriorityIcon priority={priority} className="mr-2" />
                 {PriorityToTxt(priority)}
                 <span className="sr-only">Open priority popover</span>
@@ -151,15 +151,10 @@ export const columns = [
       const statusTxt = StatusToText(status);
 
       return (
-        <StatusPopover setStatus={handleStatusChange}>
-          <PopoverTrigger>
-            <Button variant="ghost" size="xs">
-              <StatusIcon status={status} className="mr-2" />
-              {statusTxt}
-              <span className="sr-only">Open status popover</span>
-            </Button>
-          </PopoverTrigger>
-        </StatusPopover>
+        <StatusPopover
+          setStatus={handleStatusChange}
+          status={status}
+        ></StatusPopover>
       );
     },
   }),
@@ -207,7 +202,7 @@ export const columns = [
         <div className="text-right">
           <DatePickerWithPresets date={dueDate} setDate={handleDueDateChange}>
             <PopoverTrigger>
-              <Button variant="ghost" size="xs">
+              <Button variant="ghost" size="sm">
                 <DatePickerIcon date={dueDate} className="mr-2" />
                 {dueDate
                   ? format(new Date(dueDate.toString() ?? ""), "PPP").split(
@@ -341,7 +336,7 @@ export const columns = [
   //     const Icon = StatusIcon(currentStatus, "mr-2");
   //     const statusTxt = StatusToText(currentStatus);
   //     return (
-  //       <Button variant="outline" size="xs">
+  //       <Button variant="outline" size="sm">
   //         {Icon} {"  " + statusTxt}
   //         <span className="sr-only">Open status popover</span>
   //       </Button>
@@ -364,7 +359,7 @@ export const columns = [
   //     )[0]; //This format should be like 'May 11th'
   //     return (
   //       <div className="text-right">
-  //         <Button variant="ghost" size="xs">
+  //         <Button variant="ghost" size="sm">
   //           {<Calendar className="mr-2 h-4 w-4" />}
   //           <span className="">{formatedDate}</span>
   //         </Button>

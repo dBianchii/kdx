@@ -86,7 +86,7 @@ export function CreateTaskDialogButton() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="xs">
+        <Button variant="outline" size="sm">
           <Plus className="mr-2 h-4 w-4" />
           Create Task
         </Button>
@@ -111,7 +111,7 @@ export function CreateTaskDialogButton() {
             <StatusPopover setStatus={setStatus} status={status} />
             <PriorityPopover setPriority={setPriority}>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="xs">
+                <Button variant="outline" size="sm">
                   <PriorityIcon priority={priority} className={"mr-2"} />
                   {PriorityToTxt(priority)}
                   <span className="sr-only">Open priority popover</span>
@@ -123,7 +123,7 @@ export function CreateTaskDialogButton() {
               users={workspace?.users ?? []}
             >
               <PopoverTrigger asChild>
-                <Button variant="outline" size="xs">
+                <Button variant="outline" size="sm">
                   <span className="sr-only">Open assign user popover</span>
 
                   {user ? (
@@ -155,7 +155,7 @@ export function CreateTaskDialogButton() {
                   className={
                     !dueDate ? "text-muted-foreground" : "text-foreground"
                   }
-                  size="xs"
+                  size="sm"
                 >
                   <DatePickerIcon date={dueDate} className="mr-2 h-4 w-4" />
                   {dueDate ? format(dueDate, "PPP") : "Pick a date"}
@@ -175,7 +175,7 @@ export function CreateTaskDialogButton() {
           </div>
         </DialogDescription>
         <DialogFooter>
-          <Button type="submit" size="xs" onClick={handleCreateTask}>
+          <Button type="submit" size="sm" onClick={handleCreateTask}>
             Create task
           </Button>
         </DialogFooter>
