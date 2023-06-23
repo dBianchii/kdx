@@ -29,7 +29,7 @@ export const eventRouter = createTRPCRouter({
         startDate: z.date(),
         endDate: z.date(),
         frequency: z.nativeEnum(Frequency),
-        dateUntil: z.date()
+        dateUntil: z.date(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -46,137 +46,149 @@ export const eventRouter = createTRPCRouter({
             rule: generateRule(input.startDate, input.endDate, input.frequency),
             workspaceId: ctx.session.user.activeWorkspaceId,
             eventInfoId: eventInfo.id,
-            DateUntil: input.dateUntil
+            DateUntil: input.dateUntil,
           },
         });
       });
 
       return eventMaster;
     }),
-    getAll: protectedProcedure
+  getAll: protectedProcedure
     .input(
       z.object({
         dateStart: z.date(),
-        dateEnd: z.date()
+        dateEnd: z.date(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-
       const eventGlobal = await ctx.prisma.eventMaster.findMany({
-        where : {
+        where: {
           workspaceId: ctx.session.user.activeWorkspaceId,
           DateStart: input.dateStart,
-          DateUntil: input.dateEnd
+          DateUntil: input.dateEnd,
         },
         include: {
-          eventInfo: true
-        }
-      })
-      
+          eventInfo: true,
+        },
+      });
+
       interface CalendarTask {
-        eventId: string
-        title: string
-        description: string | null
-        date: Date
+        eventId: string;
+        title: string;
+        description: string | null;
+        date: Date;
       }
 
-      let calendarTasks: CalendarTask[] = []
-      
+      let calendarTasks: CalendarTask[] = [];
+
       //const eventGlobalIds = eventGlobal.map((eventMaster) => eventMaster.id)
-      
+
       eventGlobal.forEach((eventMaster) => {
-        const rrule = rrulestr(eventMaster.rule)
-        const allDates = rrule.between(input.dateStart, input.dateEnd)
-        
+        const rrule = rrulestr(eventMaster.rule);
+        const allDates = rrule.between(input.dateStart, input.dateEnd);
+
         allDates.forEach((date) => {
           calendarTasks.push({
             eventId: eventMaster.id,
             title: eventMaster.eventInfo.title,
             description: eventMaster.eventInfo.description,
-            date: date
-          })
-        })
-      })
+            date: date,
+          });
+        });
+      });
 
       //Handling Exceptions
       const eventExceptions = await ctx.prisma.eventException.findMany({
-        where : {
+        where: {
           OR: {
             originalDate: {
               gte: input.dateStart,
-              lte: input.dateEnd
+              lte: input.dateEnd,
             },
             newDate: {
               gte: input.dateStart,
-              lte: input.dateEnd
-            }
-          }
+              lte: input.dateEnd,
+            },
+          },
         },
         include: {
           EventMaster: {
             select: {
-              id: true
-            }
+              id: true,
+            },
           },
           EventInfo: {
             select: {
               title: true,
-              description: true
-            }
-          }
-        }
-      })
+              description: true,
+            },
+          },
+        },
+      });
 
       const eventCancelations = await ctx.prisma.eventCancellation.findMany({
         where: {
           originalDate: {
             gte: input.dateStart,
-            lte: input.dateEnd
-          }
+            lte: input.dateEnd,
+          },
         },
         include: {
           EventMaster: {
             select: {
-              id: true
+              id: true,
+            },
+          },
+        },
+      });
+
+      calendarTasks = calendarTasks
+        .map((calendarTask) => {
+          //Cuidar de cancelamentos
+          const foundCancelation = eventCancelations.find(
+            (x) =>
+              x.eventMasterId === calendarTask.eventId &&
+              x.originalDate === calendarTask.date
+          );
+          if (foundCancelation) return null;
+
+          // No CalendarTasks tenho Date e EventId
+          // Pesquiso dentro do EventExceptions filtrado se tenho algum item com OriginalDate e EventId semelhante
+          // Se sim, vejo o que a exceção me pede para fazer e executo
+          const foundException = eventExceptions.find(
+            (x) =>
+              x.eventMasterId === calendarTask.eventId &&
+              x.originalDate === calendarTask.date
+          );
+          if (foundException) {
+            if (foundException.newDate) {
+              //Temos alteraçao de data
+              if (
+                input.dateStart <= foundException.newDate &&
+                foundException.newDate <= input.dateEnd
+              ) {
+                calendarTask.date = foundException.newDate;
+              } else {
+                //Temos exclusão do calendarTask
+                //Como que eu excluo este calendarTask do array???
+                return null;
+              }
+            }
+
+            if (foundException.eventInfoId) {
+              //Alterou informacao
+              calendarTask.description =
+                foundException.EventInfo?.description ??
+                calendarTask.description;
+              calendarTask.title =
+                foundException.EventInfo?.title ?? calendarTask.title;
             }
           }
-        }
-      })
 
-      
-      calendarTasks = calendarTasks.map((calendarTask) => {
-        //Cuidar de cancelamentos
-        const foundCancelation = eventCancelations.find(x => x.eventMasterId === calendarTask.eventId && x.originalDate === calendarTask.date)
-        if (foundCancelation) return null 
+          return calendarTask;
+        })
+        .filter((task): task is CalendarTask => !!task);
 
-        // No CalendarTasks tenho Date e EventId
-        // Pesquiso dentro do EventExceptions filtrado se tenho algum item com OriginalDate e EventId semelhante
-        // Se sim, vejo o que a exceção me pede para fazer e executo
-        const foundException = eventExceptions.find(x => x.eventMasterId === calendarTask.eventId && x.originalDate === calendarTask.date)
-        if (foundException) {
-          if (foundException.newDate){
-            //Temos alteraçao de data
-            if (input.dateStart <= foundException.newDate && foundException.newDate <= input.dateEnd){
-              calendarTask.date = foundException.newDate
-            } else {
-              //Temos exclusão do calendarTask
-              //Como que eu excluo este calendarTask do array???
-              return null
-            }
-          }
-
-          if (foundException.eventInfoId){
-            //Alterou informacao
-            calendarTask.description = foundException.EventInfo?.description ?? calendarTask.description
-            calendarTask.title = foundException.EventInfo?.title ?? calendarTask.title
-          }
-          
-        }
-
-        return calendarTask
-      }).filter(x => x != null) as CalendarTask[] //TODO: fix as
-      
-
-      return calendarTasks
+      return calendarTasks;
     }),
 });
