@@ -32,10 +32,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
 import { DataTable } from "@/components/Apps/Todo/data-table";
 //import { columns } from "../../../components/Apps/Todo/columns";
-import StatusPopover, {
-  StatusIcon,
-  StatusToText,
-} from "@/components/Apps/Todo/StatusPopover";
+import StatusPopover from "@/components/Apps/Todo/StatusPopover";
 
 import { columns } from "@/components/Apps/Todo/columns";
 import { AssigneePopover } from "@/components/Apps/Todo/AssigneePopover";
@@ -84,7 +81,6 @@ export function CreateTaskDialogButton() {
 
   const [open, setOpen] = useState(false);
 
-  const statusTxt = StatusToText(status);
   const user = (workspace?.users ?? []).find((x) => x.id === assignedToUserId);
 
   return (
@@ -112,15 +108,7 @@ export function CreateTaskDialogButton() {
             onChange={(e) => setDescription(e.target.value)}
           ></Textarea>
           <div className="flex flex-row gap-1">
-            <StatusPopover setStatus={setStatus}>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="xs">
-                  <StatusIcon status={status} className={"mr-2"} />
-                  {statusTxt}
-                  <span className="sr-only">Open status popover</span>
-                </Button>
-              </PopoverTrigger>
-            </StatusPopover>
+            <StatusPopover setStatus={setStatus} status={status} />
             <PriorityPopover setPriority={setPriority}>
               <PopoverTrigger asChild>
                 <Button variant="outline" size="xs">
