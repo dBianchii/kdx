@@ -1,4 +1,4 @@
-import { Popover, PopoverContent } from "@ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
 import {
   CommandInput,
   CommandList,
@@ -8,48 +8,152 @@ import {
 } from "@ui/command";
 import { useState } from "react";
 import { Frequency, RRule } from "rrule";
+import { Button } from "./ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog";
+import { Input } from "./ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { Calendar } from "./ui/calendar";
+import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
+import { Label } from "@ui/label";
+import { DatePickerWithPresets } from "./DatePickerWithPresets";
+import DatePicker from "./DatePicker";
 
-/**
- * To use this component, make sure you wrap it around a PopoverTrigger component.
- * To activate the FrequencyPopover component from within a Context Menu or Dropdown Menu, you must encase the Context Menu or Dropdown Menu component on the FrequencyPopover component.
- */
 export function FrequencyPopover({
+  frequency,
   setFrequency,
+  untilDate,
+  setUntilDate,
   children,
 }: {
+  frequency: Frequency | null;
   setFrequency: (frequency: Frequency) => void;
+  untilDate: Date | undefined;
+  setUntilDate: (endsAt: Date | undefined) => void;
   children?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [radio, setRadio] = useState<"never" | "at">("never");
 
   const freqs = [RRule.DAILY, RRule.WEEKLY, RRule.MONTHLY, RRule.YEARLY];
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      {children}
+      <PopoverTrigger>
+        {children ?? (
+          <Button variant="outline" size="sm">
+            {FrequencyToTxt(frequency)}
+          </Button>
+        )}
+      </PopoverTrigger>
       <PopoverContent className="w-300 p-0" side="bottom" align={"start"}>
-        <Command>
-          <CommandInput placeholder="Change frequency..." />
-          <CommandList
-            onSelect={() => {
-              setOpen(false);
-            }}
-          >
-            <CommandGroup>
-              {freqs.map((freq, i) => (
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Personalized Recurrence</DialogTitle>
+              <DialogDescription>
+                <div className="mt-4 flex flex-row gap-4">
+                  <span className="font-medium">Repeat every:</span>
+                  <Input type="number" placeholder="1" className="w-16" />
+                  <Select defaultValue="DAILY">
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Select a recurrence" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="DAILY">Days</SelectItem>
+                      <SelectItem value="WEEKLY">Weeks</SelectItem>
+                      <SelectItem value="MONTHLY">Months</SelectItem>
+                      <SelectItem value="YEARLY">Years</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex flex-row">
+                  <div className="flex flex-col">
+                    <RadioGroup className="mt-2 space-y-3" defaultValue="never">
+                      <span className="mt-4 font-medium">Ends:</span>
+                      <div className="flex items-center">
+                        <RadioGroupItem
+                          value="never"
+                          id="r1"
+                          onClick={() => {
+                            setRadio("never");
+                          }}
+                        />
+                        <Label htmlFor="r1" className="ml-2">
+                          Never
+                        </Label>
+                      </div>
+                      <div className="flex items-center">
+                        <RadioGroupItem
+                          value="at"
+                          id="r2"
+                          onClick={() => {
+                            setRadio("at");
+                          }}
+                        />
+                        <Label htmlFor="r2" className="ml-2">
+                          At
+                        </Label>
+                        <div className=" ml-8">
+                          <DatePicker
+                            date={untilDate}
+                            setDate={setUntilDate}
+                            disabledDate={(date) => date < new Date()}
+                            disabledPopover={radio !== "at"}
+                          />
+                        </div>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                </div>
+              </DialogDescription>
+            </DialogHeader>
+          </DialogContent>
+          <Command>
+            <CommandInput placeholder="Change frequency..." />
+            <CommandList
+              onSelect={() => {
+                setOpen(false);
+              }}
+            >
+              <CommandGroup>
+                {freqs.map((freq, i) => (
+                  <CommandItem
+                    key={i}
+                    onSelect={() => {
+                      setFrequency(freq);
+                      setOpen(false);
+                    }}
+                  >
+                    {FrequencyToTxt(freq)}
+                  </CommandItem>
+                ))}
                 <CommandItem
-                  key={i}
                   onSelect={() => {
-                    setFrequency(freq);
-                    setOpen(false);
+                    setDialogOpen(true);
                   }}
                 >
-                  {FrequencyToTxt(freq)}
+                  Custom...
                 </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </Dialog>
       </PopoverContent>
     </Popover>
   );
@@ -65,5 +169,7 @@ export function FrequencyToTxt(frequency: Frequency | null) {
       return "Every month";
     case RRule.YEARLY:
       return "Every year";
+    default:
+      return "None";
   }
 }

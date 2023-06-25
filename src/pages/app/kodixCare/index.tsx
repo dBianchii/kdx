@@ -23,6 +23,7 @@ import {
   FrequencyPopover,
 } from "@/components/FrequencyPopover";
 import { PopoverTrigger } from "@/components/ui/popover";
+import DatePicker from "@/components/DatePicker";
 
 export default function KodixCare() {
   console.log(Frequency);
@@ -42,15 +43,10 @@ function CreateEventDialogButton() {
   const [description, setDescription] = useState("");
   const [open, setOpen] = useState(false);
 
-  const [startDate, setStartDate] = useState<DateValue | null>(null);
-  const [endDate, setEndDate] = useState<DateValue | null>(null);
-  const [frequency, setFrequency] = useState<Frequency | null>(null);
-  const handleStartDateChange = (date: DateValue | null) => {
-    setStartDate(date);
-  };
-  const handleEndDateChange = (date: DateValue | null) => {
-    setEndDate(date);
-  };
+  const [startDate, setStartDate] = useState<Date>();
+  const [untilDate, setUntilDate] = useState<Date>();
+
+  const [frequency, setFrequency] = useState(Frequency.DAILY);
 
   const { mutate: createEvent } = api.event.create.useMutation();
 
@@ -68,61 +64,74 @@ function CreateEventDialogButton() {
           <DialogTitle>New Event</DialogTitle>
         </DialogHeader>
         <DialogDescription>
-          <Input
-            className="my-2"
-            type="text"
-            placeholder="Task title..."
-            onChange={(e) => setTitle(e.target.value)}
-          ></Input>
-          <div className="my-2 flex flex-row gap-4">
-            <div className="flex flex-col gap-1">
-              From
-              <DateTimePicker
-                granularity="minute"
-                value={startDate}
-                onChange={handleStartDateChange}
+          <div className="space-y-4">
+            <div className="flex flex-row gap-2">
+              <Input
+                className="my-2"
+                type="text"
+                placeholder="Task title..."
+                onChange={(e) => setTitle(e.target.value)}
               />
             </div>
-            <div className="flex flex-col gap-1">
-              To
-              <DateTimePicker
-                granularity="minute"
-                value={endDate}
-                onChange={handleEndDateChange}
+            <div className="flex flex-row gap-2">
+              <span>From</span>
+              <DatePicker
+                date={startDate}
+                setDate={setStartDate}
+                className="w-[200px]"
+              />
+
+              <Input
+                type="time"
+                className="w-24"
+                onChange={(e) => {
+                  const selectedTime = e.target.value;
+                  setStartDate((prev) => {
+                    if (!prev) return prev;
+                    const updatedStartDate = new Date(prev);
+                    const [hours, minutes] = selectedTime?.split(":") ?? [];
+                    updatedStartDate.setHours(
+                      hours !== undefined ? parseInt(hours, 10) : 0
+                    );
+                    updatedStartDate.setMinutes(
+                      minutes !== undefined ? parseInt(minutes, 10) : 0
+                    );
+                    return updatedStartDate;
+                  });
+                }}
               />
             </div>
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-row gap-2">
               Frequency
-              <FrequencyPopover setFrequency={setFrequency}>
-                <PopoverTrigger>
-                  <Button variant="outline" size="sm">
-                    {FrequencyToTxt(frequency)}
-                  </Button>
-                </PopoverTrigger>
-              </FrequencyPopover>
+              <FrequencyPopover
+                frequency={frequency}
+                setFrequency={setFrequency}
+                untilDate={untilDate}
+                setUntilDate={setUntilDate}
+              />
             </div>
+            <Textarea
+              placeholder="Add description..."
+              onChange={(e) => setDescription(e.target.value)}
+            ></Textarea>
           </div>
-          <Textarea
-            className="my-4 border-none"
-            placeholder="Add description..."
-            onChange={(e) => setDescription(e.target.value)}
-          ></Textarea>
         </DialogDescription>
         <DialogFooter>
           <Button
             type="submit"
             size="sm"
             onClick={() => {
-              if (!startDate || !endDate) return;
-              createEvent({
-                title,
-                description,
-                startDate: startDate.toDate("UTC"),
-                endDate: endDate.toDate("UTC"),
-                frequency: Frequency.DAILY,
-                dateUntil: new Date(),
-              });
-              setOpen(false);
+              if (!startDate) return;
+              alert(startDate);
+              // createEvent({
+              //   title,
+              //   description,
+              //   startDate: startDate.toDate("UTC"),
+              //   endDate: endDate.toDate("UTC"),
+              //   frequency: Frequency.DAILY,
+              //   dateUntil: new Date(),
+              // });
+              // setOpen(false);
             }}
           >
             Create task

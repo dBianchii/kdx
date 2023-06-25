@@ -27,6 +27,7 @@ import {
 import { AssigneePopover } from "./AssigneePopover";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ZodNullable } from "zod";
 
 type RouterOutput = inferRouterOutputs<AppRouter>;
 export type TodoColumn = RouterOutput["todo"]["getAllForLoggedUser"][number];
@@ -201,7 +202,7 @@ export const columns = [
             description: "Please try again later",
           });
           // If the mutation fails, use the context-value from onMutate
-          setDueDate(ctx?.prevData);
+          setDueDate(ctx?.prevData ?? undefined);
         },
       });
 
@@ -211,28 +212,7 @@ export const columns = [
 
       return (
         <div className="text-right">
-          <DatePickerWithPresets date={dueDate} setDate={handleDueDateChange}>
-            <PopoverTrigger>
-              <Button variant="ghost" size="sm">
-                <DatePickerIcon date={dueDate} className="mr-2" />
-                {dueDate
-                  ? format(new Date(dueDate.toString() ?? ""), "PPP").split(
-                      ","
-                    )[0]
-                  : "Pick a date"}
-                {dueDate && (
-                  <span
-                    onClick={() => {
-                      handleDueDateChange(null);
-                    }}
-                    className="ml-2 rounded-full transition-colors hover:bg-primary/90 hover:text-background"
-                  >
-                    <X className="h-4 w-4 " />
-                  </span>
-                )}
-              </Button>
-            </PopoverTrigger>
-          </DatePickerWithPresets>
+          <DatePickerWithPresets date={dueDate} setDate={handleDueDateChange} />
         </div>
       );
     },
