@@ -6,7 +6,7 @@ import {
   CommandItem,
   Command,
 } from "@ui/command";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Frequency, RRule } from "rrule";
 import { Button } from "./ui/button";
 import {
@@ -33,22 +33,25 @@ import { Label } from "@ui/label";
 import { DatePickerWithPresets } from "./DatePickerWithPresets";
 import DatePicker from "./DatePicker";
 
-export function FrequencyPopover({
+export function FrequencyPicker({
   frequency,
   setFrequency,
   untilDate,
   setUntilDate,
+  neverEnds,
+  setNeverEnds,
   children,
 }: {
   frequency: Frequency | null;
-  setFrequency: (frequency: Frequency) => void;
+  setFrequency: React.Dispatch<React.SetStateAction<Frequency>>;
   untilDate: Date | undefined;
-  setUntilDate: (endsAt: Date | undefined) => void;
+  setUntilDate: React.Dispatch<React.SetStateAction<Date | undefined>>;
+  neverEnds: boolean;
+  setNeverEnds: React.Dispatch<React.SetStateAction<boolean>>;
   children?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [radio, setRadio] = useState<"never" | "at">("never");
 
   const freqs = [RRule.DAILY, RRule.WEEKLY, RRule.MONTHLY, RRule.YEARLY];
 
@@ -84,14 +87,17 @@ export function FrequencyPopover({
                 </div>
                 <div className="flex flex-row">
                   <div className="flex flex-col">
-                    <RadioGroup className="mt-2 space-y-3" defaultValue="never">
+                    <RadioGroup
+                      className="mt-2 space-y-3"
+                      defaultValue={neverEnds ? "1" : "0"}
+                    >
                       <span className="mt-4 font-medium">Ends:</span>
                       <div className="flex items-center">
                         <RadioGroupItem
-                          value="never"
+                          value="1"
                           id="r1"
                           onClick={() => {
-                            setRadio("never");
+                            setNeverEnds(true);
                           }}
                         />
                         <Label htmlFor="r1" className="ml-2">
@@ -100,10 +106,10 @@ export function FrequencyPopover({
                       </div>
                       <div className="flex items-center">
                         <RadioGroupItem
-                          value="at"
+                          value="0"
                           id="r2"
                           onClick={() => {
-                            setRadio("at");
+                            setNeverEnds(false);
                           }}
                         />
                         <Label htmlFor="r2" className="ml-2">
@@ -114,7 +120,7 @@ export function FrequencyPopover({
                             date={untilDate}
                             setDate={setUntilDate}
                             disabledDate={(date) => date < new Date()}
-                            disabledPopover={radio !== "at"}
+                            disabledPopover={neverEnds}
                           />
                         </div>
                       </div>
@@ -162,13 +168,13 @@ export function FrequencyPopover({
 export function FrequencyToTxt(frequency: Frequency | null) {
   switch (frequency) {
     case RRule.DAILY:
-      return "Every day";
+      return "Day";
     case RRule.WEEKLY:
-      return "Every week";
+      return "Week";
     case RRule.MONTHLY:
-      return "Every month";
+      return "Month";
     case RRule.YEARLY:
-      return "Every year";
+      return "Year";
     default:
       return "None";
   }

@@ -16,12 +16,14 @@ export default function DatePicker({
   setDate,
   disabledDate,
   disabledPopover,
+  onDayClick,
   className,
 }: {
-  date: Date | undefined;
-  setDate: (newDate: Date | undefined) => void;
+  date?: Date | undefined;
+  setDate?: (newDate: Date | undefined) => void;
   disabledDate?: (date: Date) => boolean;
   disabledPopover?: boolean;
+  onDayClick?: (date: Date | undefined) => void;
   className?: string;
 }) {
   return (
@@ -46,6 +48,7 @@ export default function DatePicker({
           selected={date}
           onSelect={setDate}
           disabled={disabledDate}
+          onDayClick={onDayClick}
           initialFocus
         />
       </PopoverContent>
