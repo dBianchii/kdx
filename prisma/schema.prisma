@@ -89,10 +89,10 @@ model Todo {
 }
 
 model EventMaster {
-  id   String @id @default(cuid())
-  rule String
-  DateStart       DateTime?
-  DateUntil       DateTime
+  id        String    @id @default(cuid())
+  rule      String
+  DateStart DateTime
+  DateUntil DateTime?
 
   eventInfo   EventInfo @relation(fields: [eventInfoId], references: [id])
   eventInfoId String
@@ -119,7 +119,7 @@ model EventInfo {
 }
 
 model EventException {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   originalDate DateTime
   newDate      DateTime?
 
