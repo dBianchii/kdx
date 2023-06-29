@@ -3,15 +3,17 @@ import { RRule, Frequency, RRuleSet, rrulestr } from "rrule";
 import { z } from "zod";
 
 function generateRule(
-  startDate: Date,
-  endDate: Date,
-  frequency: Frequency
+  startDate: Date | undefined,
+  endDate: Date | undefined,
+  frequency: Frequency,
+  interval: number | undefined
 ): string {
   const ruleSet = new RRuleSet();
   const rule = new RRule({
     freq: frequency,
     dtstart: startDate,
     until: endDate,
+    interval,
   });
   ruleSet.rrule(rule);
   return ruleSet.toString();
@@ -23,10 +25,10 @@ export const eventRouter = createTRPCRouter({
       z.object({
         title: z.string(),
         description: z.string().optional(),
-        startDate: z.date(),
-        endDate: z.date(),
+        dateStart: z.date().optional(),
+        until: z.date().optional(),
         frequency: z.nativeEnum(Frequency),
-        dateUntil: z.date(),
+        interval: z.number().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -40,10 +42,16 @@ export const eventRouter = createTRPCRouter({
 
         return await tx.eventMaster.create({
           data: {
-            rule: generateRule(input.startDate, input.endDate, input.frequency),
+            rule: generateRule(
+              input.dateStart,
+              input.until,
+              input.frequency,
+              input.interval
+            ),
             workspaceId: ctx.session.user.activeWorkspaceId,
             eventInfoId: eventInfo.id,
-            DateUntil: input.dateUntil,
+            DateStart: input.dateStart,
+            DateUntil: input.until,
           },
         });
       });
@@ -57,12 +65,16 @@ export const eventRouter = createTRPCRouter({
         dateEnd: z.date(),
       })
     )
-    .mutation(async ({ ctx, input }) => {
+    .query(async ({ ctx, input }) => {
       const eventGlobal = await ctx.prisma.eventMaster.findMany({
         where: {
           workspaceId: ctx.session.user.activeWorkspaceId,
-          DateStart: input.dateStart,
-          DateUntil: input.dateEnd,
+          OR: {
+            DateStart: {
+              gte: input.dateStart,
+              lte: input.dateEnd,
+            },
+          },
         },
         include: {
           eventInfo: true,
