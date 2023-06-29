@@ -34,7 +34,7 @@ type CreateContextOptions = {
  *
  * @see https://create.t3.gg/en/usage/trpc#-servertrpccontextts
  */
-export const createInnerTRPCContext = (opts: CreateContextOptions) => {
+const createInnerTRPCContext = (opts: CreateContextOptions) => {
   return {
     session: opts.session,
     prisma,
@@ -118,12 +118,3 @@ const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
  * @see https://trpc.io/docs/procedures
  */
 export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);
-
-const timingMiddleware = t.middleware(async ({ ctx, next }) => {
-  console.time("timingMiddleware");
-  const res = await next({ ctx });
-  console.timeEnd("timingMiddleware");
-  return res;
-});
-
-export const timedProcedure = t.procedure.use(timingMiddleware);

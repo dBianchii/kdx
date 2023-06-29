@@ -37,24 +37,8 @@ import StatusPopover from "@/components/Apps/Todo/StatusPopover";
 import { columns } from "@/components/Apps/Todo/columns";
 import { AssigneePopover } from "@/components/Apps/Todo/AssigneePopover";
 import { appRouter } from "@/server/api/root";
-import { createServerSideHelpers } from "@trpc/react-query/server";
-import superjson from "superjson";
-import { createInnerTRPCContext } from "@/server/api/trpc";
 
-export const getServerSideProps = async () => {
-  const helpers = createServerSideHelpers({
-    router: appRouter,
-    ctx: createInnerTRPCContext({}),
-    transformer: superjson,
-  });
-  return {
-    props: {},
-  };
-};
-
-export default function Todo(
-  props: InferGetServerSidePropsType<typeof getServerSideProps>
-) {
+export default function Todo() {
   const { data } = api.todo.getAllForLoggedUser.useQuery();
 
   return (

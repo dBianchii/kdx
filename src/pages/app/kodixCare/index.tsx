@@ -45,10 +45,10 @@ export default function KodixCare() {
   //date Start should be the beginninig of the day
   //date End should be the end of the day
 
-  //const { data } = api.event.getAll.useQuery({
-  //  dateStart: new Date(),
-  //  dateEnd: new Date(),
-  //});
+  // const { data } = api.event.getAll.useQuery({
+  //   dateStart: new Date(),
+  //   dateEnd: new Date(),
+  // });
 
   return (
     <>
