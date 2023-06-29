@@ -73,6 +73,7 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
           name: newSelectedWS.name,
         });
       },
+      refetchOnWindowFocus: false,
     }
   );
 
