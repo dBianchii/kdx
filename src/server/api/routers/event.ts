@@ -1,4 +1,4 @@
-import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure, timedProcedure } from "../trpc";
 import { RRule, Frequency, RRuleSet, rrulestr } from "rrule";
 import { z } from "zod";
 
@@ -58,7 +58,7 @@ export const eventRouter = createTRPCRouter({
 
       return eventMaster;
     }),
-  getAll: protectedProcedure
+  getAll: timedProcedure
     .input(
       z.object({
         dateStart: z.date(),

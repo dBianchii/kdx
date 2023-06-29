@@ -45,13 +45,10 @@ export default function KodixCare() {
   //date Start should be the beginninig of the day
   //date End should be the end of the day
 
-  // const [dateStart, setDateStart] = useState(new Date());
-  // const [dateEnd, setDateEnd] = useState(addDays(new Date(), 7));
-
-  // const { data } = api.event.getAll.useQuery({
-  //   dateStart,
-  //   dateEnd,
-  // });
+  //const { data } = api.event.getAll.useQuery({
+  //  dateStart: new Date(),
+  //  dateEnd: new Date(),
+  //});
 
   return (
     <>
