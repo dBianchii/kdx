@@ -46,26 +46,36 @@ export default function KodixCare() {
   //date Start should be the beginninig of the day
   //date End should be the end of the day
 
-  // const [selectedDate, setSelectedDate] = useState(new Date());
-  // const [selectedDateEnd, setSelectedDateEnd] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    moment().startOf("day").toDate()
+  );
+  const [selectedDateEnd, setSelectedDateEnd] = useState<Date | undefined>(
+    moment().endOf("day").toDate()
+  );
 
   const { data } = api.event.getAll.useQuery(
     {
-      dateStart: moment().add(1, "day").startOf("day").toDate(),
-      dateEnd: moment().add(3, "day").endOf("day").toDate(),
+      dateStart: selectedDate ?? moment().startOf("day").toDate(),
+      dateEnd: selectedDateEnd ?? moment().endOf("day").toDate(),
     },
     {
       refetchOnWindowFocus: false,
     }
   );
-  console.log(data);
 
   return (
     <>
       <H1>Kodix Care</H1>
       <Separator className="my-4" />
       <CreateEventDialogButton />
-      <DataTable columns={columns} data={data ?? []} />
+      <DataTable
+        columns={columns}
+        data={data ?? []}
+        selectedDate={selectedDate}
+        setSelectedDate={setSelectedDate}
+        selectedDateEnd={selectedDateEnd}
+        setSelectedDateEnd={setSelectedDateEnd}
+      />
     </>
   );
 }
