@@ -91,7 +91,7 @@ model Todo {
 model EventMaster {
   id        String    @id @default(cuid())
   rule      String
-  DateStart DateTime?
+  DateStart DateTime
   DateUntil DateTime?
 
   eventInfo   EventInfo @relation(fields: [eventInfoId], references: [id])

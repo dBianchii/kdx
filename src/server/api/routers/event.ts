@@ -25,7 +25,7 @@ export const eventRouter = createTRPCRouter({
       z.object({
         title: z.string(),
         description: z.string().optional(),
-        dateStart: z.date().optional(),
+        dateStart: z.date(),
         until: z.date().optional(),
         frequency: z.nativeEnum(Frequency),
         interval: z.number().optional(),
@@ -69,12 +69,19 @@ export const eventRouter = createTRPCRouter({
       const eventGlobal = await ctx.prisma.eventMaster.findMany({
         where: {
           workspaceId: ctx.session.user.activeWorkspaceId,
-          OR: {
-            DateStart: {
-              gte: input.dateStart,
-              lte: input.dateEnd,
+          AND: [
+            {
+              DateStart: {
+                lte: input.dateEnd,
+              },
             },
-          },
+            {
+              OR: [
+                { DateUntil: { gte: input.dateStart } },
+                { DateUntil: null },
+              ],
+            },
+          ],
         },
         include: {
           eventInfo: true,

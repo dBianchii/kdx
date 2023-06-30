@@ -8,7 +8,14 @@ import {
   type ColumnFiltersState,
 } from "@tanstack/react-table";
 
-import { Table, TableBody, TableCell, TableRow } from "@ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@ui/table";
 import { CreateTaskDialogButton } from "@/pages/app/todo";
 import {
   ContextMenu,
@@ -55,6 +62,24 @@ export function DataTable<TData>({ columns, data }: DataTableProps<TData>) {
       </div>
       <div className="rounded-md border">
         <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  );
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
