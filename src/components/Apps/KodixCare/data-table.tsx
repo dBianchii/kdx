@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/context-menu";
 import { DataTablePagination } from "@/components/pagination";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -40,8 +40,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/components/ui/lib/utils";
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { add, addDays, format } from "date-fns";
+import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 
 interface DataTableProps<TData> {
@@ -49,9 +49,7 @@ interface DataTableProps<TData> {
   columns: ColumnDef<TData, any>[];
   data: TData[];
   selectedDate: Date | undefined;
-  setSelectedDate: (date: Date | undefined) => void;
-  selectedDateEnd: Date | undefined;
-  setSelectedDateEnd: (date: Date | undefined) => void;
+  setSelectedDate: React.Dispatch<React.SetStateAction<Date | undefined>>;
 }
 
 export function DataTable<TData>({
@@ -59,8 +57,6 @@ export function DataTable<TData>({
   data,
   selectedDate,
   setSelectedDate,
-  selectedDateEnd,
-  setSelectedDateEnd,
 }: DataTableProps<TData>) {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
@@ -78,8 +74,8 @@ export function DataTable<TData>({
 
   return (
     <div>
-      <div className="my-4 mt-6 flex flex-col items-start justify-between space-y-2 py-4 sm:flex-row sm:items-center sm:space-y-0 md:h-16">
-        <div className="flex flex-col space-y-2">
+      <div className="flex justify-between">
+        <div className="space-y-2">
           <Label htmlFor="search">Search...</Label>
           <Input
             id="search"
@@ -91,67 +87,34 @@ export function DataTable<TData>({
             className="max-w-sm"
           />
         </div>
-        <div className="ml-auto flex w-full space-x-2 sm:justify-end">
-          <div className="flex flex-col space-y-2">
-            <Label htmlFor="from">From</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  id="from"
-                  variant={"outline"}
-                  className={cn(
-                    "w-[280px] justify-start text-left font-normal",
-                    !selectedDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {selectedDate ? (
-                    format(selectedDate, "PPP")
-                  ) : (
-                    <span>Pick a date</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={setSelectedDate}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-          <div className="flex flex-col space-y-2">
-            <Label htmlFor="To">To</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  id="To"
-                  variant={"outline"}
-                  className={cn(
-                    "w-[280px] justify-start text-left font-normal",
-                    !selectedDateEnd && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {selectedDateEnd ? (
-                    format(selectedDateEnd, "PPP")
-                  ) : (
-                    <span>Pick a date</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={selectedDateEnd}
-                  onSelect={setSelectedDateEnd}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
+        <div className="space-x-2 text-center">
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setSelectedDate((prev) => prev && addDays(prev, -1));
+            }}
+          >
+            <ChevronLeft />
+          </Button>
+          <span className="text-lg font-bold">
+            {selectedDate ? (
+              format(selectedDate, "PPP")
+            ) : (
+              <span>Pick a date</span>
+            )}
+          </span>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setSelectedDate((prev) => prev && addDays(prev, 1));
+            }}
+          >
+            <ChevronRight />
+          </Button>
+        </div>
+        <div className="invisible space-y-2">
+          <Label>Invisible cause Im bat at css...</Label>
+          <Input className="max-w-sm" />
         </div>
       </div>
 
