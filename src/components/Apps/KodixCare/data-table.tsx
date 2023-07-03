@@ -28,7 +28,9 @@ import React, { useState } from "react";
 import { Button } from "@ui/button";
 import { Label } from "@/components/ui/label";
 import { addDays, format } from "date-fns";
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Trash2 } from "lucide-react";
+import CancelationDialog from "./CancelationDialog";
+import { AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 interface DataTableProps<TData> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -144,21 +146,28 @@ export function DataTable<TData>({
                     data-state={row.getIsSelected() && "selected"}
                     key={row.id}
                   >
-                    <ContextMenuTrigger className="contents">
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
-                          {flexRender(cell.column.columnDef.cell, {
-                            ...cell.getContext(),
-                          })}
-                        </TableCell>
-                      ))}
-                    </ContextMenuTrigger>
-                    <ContextMenuContent>
-                      <ContextMenuItem>Status</ContextMenuItem>
-                      <ContextMenuItem>Assignee</ContextMenuItem>
-                      <ContextMenuItem>Priority</ContextMenuItem>
-                      <ContextMenuItem>Change due date...</ContextMenuItem>
-                    </ContextMenuContent>
+                    <CancelationDialog
+                      eventId={row.getValue("eventId")}
+                      date={row.getValue("date")}
+                    >
+                      <ContextMenuTrigger className="contents">
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id}>
+                            {flexRender(cell.column.columnDef.cell, {
+                              ...cell.getContext(),
+                            })}
+                          </TableCell>
+                        ))}
+                      </ContextMenuTrigger>
+                      <ContextMenuContent>
+                        <AlertDialogTrigger asChild>
+                          <ContextMenuItem>
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete Event
+                          </ContextMenuItem>
+                        </AlertDialogTrigger>
+                      </ContextMenuContent>
+                    </CancelationDialog>
                   </TableRow>
                 </ContextMenu>
               ))

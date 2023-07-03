@@ -28,6 +28,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { api } from "@/utils/api";
+import CancelationDialog from "./CancelationDialog";
 
 type RouterOutput = inferRouterOutputs<AppRouter>;
 type CalendarTask = RouterOutput["event"]["getAll"][number];
@@ -43,25 +44,6 @@ export const columns = [
       />
     ),
     cell: function Cell(info) {
-      const [radioValue, setRadioValue] = useState<"thisEvent" | "allEvents">(
-        "thisEvent"
-      );
-      const [buttonLoading, setButtonLoading] = useState(false);
-      const [open, setOpen] = useState(false);
-      const ctx = api.useContext();
-      const { mutate: cancelEvent } = api.event.cancelEvent.useMutation({
-        onMutate: () => {
-          setButtonLoading(true);
-        },
-        onSuccess: () => {
-          void ctx.event.getAll.invalidate();
-          setOpen(false);
-        },
-        onSettled: () => {
-          setButtonLoading(false);
-        },
-      });
-
       return (
         <div className="space-x-4">
           <Checkbox
@@ -69,7 +51,10 @@ export const columns = [
             onCheckedChange={(value) => info.row.toggleSelected(!!value)}
             aria-label="Select row"
           />
-          <AlertDialog open={open} onOpenChange={setOpen}>
+          <CancelationDialog
+            eventId={info.row.original.eventId}
+            date={info.row.original.date}
+          >
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-8 w-8 p-0">
@@ -78,10 +63,6 @@ export const columns = [
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
-                <DropdownMenuItem>
-                  <Pencil className="mr-2 h-4 w-4" />
-                  Edit Event
-                </DropdownMenuItem>
                 <AlertDialogTrigger asChild>
                   <DropdownMenuItem>
                     <Trash2 className="mr-2 h-4 w-4" />
@@ -90,63 +71,7 @@ export const columns = [
                 </AlertDialogTrigger>
               </DropdownMenuContent>
             </DropdownMenu>
-
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Exclude recurrent event</AlertDialogTitle>
-                <AlertDialogDescription className="mt-6">
-                  <RadioGroup
-                    className="flex flex-col space-y-2"
-                    defaultValue="thisEvent"
-                  >
-                    <div className="flex">
-                      <RadioGroupItem
-                        id="thisEvent"
-                        value={"thisEvent"}
-                        onClick={() => {
-                          setRadioValue("thisEvent");
-                        }}
-                      />
-                      <Label htmlFor="thisEvent" className="ml-2">
-                        This event
-                      </Label>
-                    </div>
-                    <div className="flex">
-                      <RadioGroupItem
-                        id="allEvents"
-                        value={"allEvents"}
-                        onClick={() => {
-                          setRadioValue("allEvents");
-                        }}
-                      />
-                      <Label htmlFor="allEvents" className="ml-2">
-                        All events
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={(e) => {
-                    e.preventDefault();
-                    cancelEvent({
-                      eventId: info.row.original.eventId,
-                      originalDate: info.row.original.date,
-                      allEvents: radioValue === "allEvents",
-                    });
-                  }}
-                >
-                  {buttonLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <>OK</>
-                  )}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          </CancelationDialog>
         </div>
       );
     },
