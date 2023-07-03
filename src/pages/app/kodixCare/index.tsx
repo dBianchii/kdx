@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { H1 } from "@/components/ui/typography";
-import { CalendarIcon, Check, Plus } from "lucide-react";
+import { CalendarIcon, Check, Loader2, Plus } from "lucide-react";
 import { Frequency, RRule } from "rrule";
 import { useState } from "react";
 import { api } from "@/utils/api";
@@ -50,7 +50,7 @@ export default function KodixCare() {
     moment().startOf("day").toDate()
   );
 
-  const { data } = api.event.getAll.useQuery(
+  const result = api.event.getAll.useQuery(
     {
       dateStart: selectedDay ?? moment().startOf("day").toDate(),
       dateEnd: moment(selectedDay).endOf("day").toDate(),
@@ -67,9 +67,10 @@ export default function KodixCare() {
       <CreateEventDialogButton />
       <DataTable
         columns={columns}
-        data={data ?? []}
+        data={result.data ?? []}
         selectedDate={selectedDay}
         setSelectedDate={setSelectedDay}
+        isLoading={result.isFetching || result.isRefetching}
       />
     </>
   );
@@ -102,11 +103,20 @@ function CreateEventDialogButton() {
   //   console.log(values);
   // }
   const [open, setOpen] = useState(false);
+  const ctx = api.useContext();
   const { mutate: createEvent } = api.event.create.useMutation({
+    onMutate: () => {
+      setButtonLoading(true);
+    },
     onSuccess: () => {
+      void ctx.event.getAll.invalidate();
       setOpen(false);
     },
+    onSettled: () => {
+      setButtonLoading(false);
+    },
   });
+  const [buttonLoading, setButtonLoading] = useState(false);
   const [neverEnds, setNeverEnds] = useState(true);
   const [formData, setFormData] = useState<{
     title: string;
@@ -134,6 +144,7 @@ function CreateEventDialogButton() {
   });
   function handleSubmitFormData() {
     //insert the time into the date
+
     formData.from.set({
       hour: parseInt(formData.time.split(":")[0] ?? "0"),
       minute: parseInt(formData.time.split(":")[1] ?? "0"),
@@ -421,8 +432,12 @@ function CreateEventDialogButton() {
               </div>
             </DialogDescription>
             <DialogFooter>
-              <Button type="submit" size="sm">
-                Create task
+              <Button type="submit" size="sm" disabled={buttonLoading}>
+                {buttonLoading ? (
+                  <Loader2 className="mx-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <>Create task</>
+                )}
               </Button>
             </DialogFooter>
           </form>

@@ -16,7 +16,6 @@ import {
   TableHeader,
   TableRow,
 } from "@ui/table";
-import { CreateTaskDialogButton } from "@/pages/app/todo";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -26,23 +25,10 @@ import {
 import { DataTablePagination } from "@/components/pagination";
 import { Input } from "@/components/ui/input";
 import React, { useState } from "react";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Button } from "@ui/button";
 import { Label } from "@/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/components/ui/lib/utils";
-import { add, addDays, format } from "date-fns";
-import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
-import { Calendar } from "@/components/ui/calendar";
+import { addDays, format } from "date-fns";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 
 interface DataTableProps<TData> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -50,6 +36,7 @@ interface DataTableProps<TData> {
   data: TData[];
   selectedDate: Date | undefined;
   setSelectedDate: React.Dispatch<React.SetStateAction<Date | undefined>>;
+  isLoading: boolean;
 }
 
 export function DataTable<TData>({
@@ -57,6 +44,7 @@ export function DataTable<TData>({
   data,
   selectedDate,
   setSelectedDate,
+  isLoading,
 }: DataTableProps<TData>) {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
@@ -139,20 +127,38 @@ export function DataTable<TData>({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24">
+                  <div className="flex h-full items-center justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow
-                  data-state={row.getIsSelected() && "selected"}
-                  key={row.id}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, {
-                        ...cell.getContext(),
-                      })}
-                    </TableCell>
-                  ))}
-                </TableRow>
+                <ContextMenu key={row.id}>
+                  <TableRow
+                    data-state={row.getIsSelected() && "selected"}
+                    key={row.id}
+                  >
+                    <ContextMenuTrigger className="contents">
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>
+                          {flexRender(cell.column.columnDef.cell, {
+                            ...cell.getContext(),
+                          })}
+                        </TableCell>
+                      ))}
+                    </ContextMenuTrigger>
+                    <ContextMenuContent>
+                      <ContextMenuItem>Status</ContextMenuItem>
+                      <ContextMenuItem>Assignee</ContextMenuItem>
+                      <ContextMenuItem>Priority</ContextMenuItem>
+                      <ContextMenuItem>Change due date...</ContextMenuItem>
+                    </ContextMenuContent>
+                  </TableRow>
+                </ContextMenu>
               ))
             ) : (
               <TableRow>
@@ -160,7 +166,7 @@ export function DataTable<TData>({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  You have no events. Yet. Create one
+                  No events for this day
                 </TableCell>
               </TableRow>
             )}

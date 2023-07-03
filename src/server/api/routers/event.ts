@@ -1,6 +1,8 @@
+import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { RRule, Frequency, RRuleSet, rrulestr } from "rrule";
 import { z } from "zod";
+import moment from "moment";
 
 function generateRule(
   startDate: Date | undefined,
@@ -161,10 +163,10 @@ export const eventRouter = createTRPCRouter({
       calendarTasks = calendarTasks
         .map((calendarTask) => {
           //Cuidar de cancelamentos
-          const foundCancelation = eventCancelations.find(
+          const foundCancelation = eventCancelations.some(
             (x) =>
               x.eventMasterId === calendarTask.eventId &&
-              x.originalDate === calendarTask.date
+              moment(x.originalDate).isSame(calendarTask.date)
           );
           if (foundCancelation) return null;
 
@@ -205,5 +207,57 @@ export const eventRouter = createTRPCRouter({
         .filter((task): task is CalendarTask => !!task);
 
       return calendarTasks;
+    }),
+  cancelEvent: protectedProcedure
+    .input(
+      z.object({
+        eventId: z.string(),
+        originalDate: z.date(),
+        allEvents: z.boolean().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const eventMaster = await ctx.prisma.eventMaster.findUnique({
+        where: {
+          id: input.eventId,
+        },
+      });
+      if (!eventMaster)
+        throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
+
+      if (!input.allEvents) {
+        const eventCancelation = await ctx.prisma.eventCancellation.create({
+          data: {
+            eventMasterId: eventMaster.id,
+            originalDate: input.originalDate,
+          },
+        });
+        return eventCancelation;
+      } else {
+        await ctx.prisma.$transaction(async (tx) => {
+          const where = {
+            eventMasterId: eventMaster.id,
+          };
+          await tx.eventCancellation.deleteMany({
+            where,
+          });
+          await tx.eventException.deleteMany({
+            where,
+          });
+          await tx.eventInfo.deleteMany({
+            where: {
+              id: eventMaster.eventInfoId,
+            },
+          });
+          await tx.eventDone.deleteMany({
+            where,
+          });
+          await tx.eventMaster.deleteMany({
+            where: {
+              id: eventMaster.id,
+            },
+          });
+        });
+      }
     }),
 });
