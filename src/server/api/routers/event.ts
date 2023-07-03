@@ -182,8 +182,10 @@ export const eventRouter = createTRPCRouter({
             if (foundException.newDate) {
               //Temos alteraçao de data
               if (
-                input.dateStart <= foundException.newDate &&
-                foundException.newDate <= input.dateEnd
+                moment(input.dateStart).isSameOrBefore(
+                  foundException.newDate
+                ) &&
+                moment(input.dateEnd).isSameOrAfter(foundException.newDate)
               ) {
                 calendarTask.date = foundException.newDate;
               } else {
