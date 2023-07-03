@@ -213,7 +213,7 @@ export const eventRouter = createTRPCRouter({
       z.object({
         eventId: z.string(),
         originalDate: z.date(),
-        allEvents: z.boolean().optional(),
+        allEvents: z.boolean().default(false),
       })
     )
     .mutation(async ({ ctx, input }) => {

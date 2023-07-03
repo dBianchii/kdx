@@ -81,6 +81,7 @@ export function DataTable<TData>({
             onClick={() => {
               setSelectedDate((prev) => prev && addDays(prev, -1));
             }}
+            size={"sm"}
           >
             <ChevronLeft />
           </Button>
@@ -96,6 +97,7 @@ export function DataTable<TData>({
             onClick={() => {
               setSelectedDate((prev) => prev && addDays(prev, 1));
             }}
+            size={"sm"}
           >
             <ChevronRight />
           </Button>
