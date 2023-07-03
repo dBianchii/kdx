@@ -244,17 +244,17 @@ export const eventRouter = createTRPCRouter({
           await tx.eventException.deleteMany({
             where,
           });
-          await tx.eventInfo.deleteMany({
-            where: {
-              id: eventMaster.eventInfoId,
-            },
-          });
           await tx.eventDone.deleteMany({
             where,
           });
           await tx.eventMaster.deleteMany({
             where: {
               id: eventMaster.id,
+            },
+          });
+          await tx.eventInfo.deleteMany({
+            where: {
+              id: eventMaster.eventInfoId,
             },
           });
         });
