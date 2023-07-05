@@ -52,7 +52,7 @@ export default function KodixCare() {
 
   const result = api.event.getAll.useQuery(
     {
-      dateStart: selectedDay ?? moment().startOf("day").toDate(),
+      dateStart: moment(selectedDay).startOf("day").toDate(),
       dateEnd: moment(selectedDay).endOf("day").toDate(),
     },
     {

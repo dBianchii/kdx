@@ -28,9 +28,23 @@ import React, { useState } from "react";
 import { Button } from "@ui/button";
 import { Label } from "@/components/ui/label";
 import { addDays, format } from "date-fns";
-import { ChevronLeft, ChevronRight, Loader2, Trash2 } from "lucide-react";
+import {
+  CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  Trash2,
+} from "lucide-react";
 import CancelationDialog from "./CancelationDialog";
 import { AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { cn } from "@/components/ui/lib/utils";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import moment from "moment";
 
 interface DataTableProps<TData> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -87,13 +101,34 @@ export function DataTable<TData>({
           >
             <ChevronLeft />
           </Button>
-          <span className="text-lg font-bold">
-            {selectedDate ? (
-              format(selectedDate, "PPP")
-            ) : (
-              <span>Pick a date</span>
-            )}
-          </span>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant={"outline"}
+                className={cn(
+                  "justify-start text-left font-normal",
+                  !selectedDate && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {selectedDate ? (
+                  format(selectedDate, "PPP")
+                ) : (
+                  <span>Pick a date</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={(date) => {
+                  setSelectedDate(date);
+                }}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
           <Button
             variant="secondary"
             onClick={() => {
