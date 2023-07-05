@@ -21,35 +21,6 @@ function generateRule(
   return ruleSet.toString();
 }
 
-type props = {
-  name: string;
-} & (
-  | {
-      gender: "male";
-      salary: number;
-    }
-  | {
-      gender: "female";
-      weight: number;
-    }
-);
-
-type test = {
-  eventId: string;
-} & (
-  | {
-      allEvents: true;
-    }
-  | {
-      originalDate: Date;
-    }
-);
-
-const value1: test = {
-  eventId: "abc123",
-  allEvents: true,
-};
-
 export const eventRouter = createTRPCRouter({
   create: protectedProcedure
     .input(
@@ -251,7 +222,7 @@ export const eventRouter = createTRPCRouter({
               allEvents: z.literal(true),
             }),
             z.object({
-              allEvents: z.literal(false).default(false),
+              allEvents: z.literal(false).optional().default(false),
               originalDate: z.date(),
             }),
           ])
