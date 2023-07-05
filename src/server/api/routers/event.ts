@@ -21,6 +21,35 @@ function generateRule(
   return ruleSet.toString();
 }
 
+type props = {
+  name: string;
+} & (
+  | {
+      gender: "male";
+      salary: number;
+    }
+  | {
+      gender: "female";
+      weight: number;
+    }
+);
+
+type test = {
+  eventId: string;
+} & (
+  | {
+      allEvents: true;
+    }
+  | {
+      originalDate: Date;
+    }
+);
+
+const value1: test = {
+  eventId: "abc123",
+  allEvents: true,
+};
+
 export const eventRouter = createTRPCRouter({
   create: protectedProcedure
     .input(
@@ -212,11 +241,21 @@ export const eventRouter = createTRPCRouter({
     }),
   cancelEvent: protectedProcedure
     .input(
-      z.object({
-        eventId: z.string(),
-        originalDate: z.date(),
-        allEvents: z.boolean().default(false),
-      })
+      z
+        .object({
+          eventId: z.string(),
+        })
+        .and(
+          z.union([
+            z.object({
+              allEvents: z.literal(true),
+            }),
+            z.object({
+              allEvents: z.literal(false).default(false),
+              originalDate: z.date(),
+            }),
+          ])
+        )
     )
     .mutation(async ({ ctx, input }) => {
       const eventMaster = await ctx.prisma.eventMaster.findUnique({
