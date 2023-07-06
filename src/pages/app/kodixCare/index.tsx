@@ -169,7 +169,7 @@ function CreateEventDialogButton() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button size="sm">
           <Plus className="mr-2 h-4 w-4" />
           Create Event
         </Button>
@@ -198,44 +198,50 @@ function CreateEventDialogButton() {
                   />
                 </div>
                 <div className="flex flex-row gap-4">
-                  <Label>From</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-[240px] pl-3 text-left font-normal",
-                          !formData.from && "text-muted-foreground"
-                        )}
-                      >
-                        {formData.from ? (
-                          format(formData.from.toDate(), "PPP")
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={formData.from.toDate()}
-                        onSelect={(date) =>
-                          date &&
-                          setFormData({ ...formData, from: moment(date) })
-                        }
-                        // disabled={(date) => date < new Date()}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <Input
-                    type="time"
-                    value={formData.time}
-                    onChange={(e) =>
-                      setFormData({ ...formData, time: e.target.value })
-                    }
-                  />
+                  <div className="flex flex-col space-y-2">
+                    <Label>From</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-[200px] pl-3 text-left font-normal",
+                            !formData.from && "text-muted-foreground"
+                          )}
+                        >
+                          {formData.from ? (
+                            format(formData.from.toDate(), "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={formData.from.toDate()}
+                          onSelect={(date) =>
+                            date &&
+                            setFormData({ ...formData, from: moment(date) })
+                          }
+                          // disabled={(date) => date < new Date()}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <div className="flex flex-col space-y-2">
+                    <Label className="invisible">From</Label>
+                    <Input
+                      type="time"
+                      value={formData.time}
+                      onChange={(e) =>
+                        setFormData({ ...formData, time: e.target.value })
+                      }
+                      className="w-26"
+                    />
+                  </div>
                 </div>
                 <div className="flex flex-row gap-2">
                   <Popover>
@@ -313,6 +319,9 @@ function CreateEventDialogButton() {
                                             {FrequencyToTxt(
                                               formData.frequency
                                             ).toLowerCase()}
+                                            {formData.interval !== 1
+                                              ? "s"
+                                              : null}
                                           </Button>
                                         </PopoverTrigger>
                                         <PopoverContent

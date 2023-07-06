@@ -93,13 +93,13 @@ export function DataTable<TData>({
             className="max-w-sm"
           />
         </div>
-        <div className="space-x-2 text-center">
+        <div className="mt-auto flex space-x-2">
           <Button
-            variant="secondary"
+            variant="outline"
             onClick={() => {
               setSelectedDate((prev) => prev && addDays(prev, -1));
             }}
-            size={"sm"}
+            className="h-10 w-10 p-3"
           >
             <ChevronLeft />
           </Button>
@@ -132,11 +132,11 @@ export function DataTable<TData>({
             </PopoverContent>
           </Popover>
           <Button
-            variant="secondary"
+            variant="outline"
             onClick={() => {
               setSelectedDate((prev) => prev && addDays(prev, 1));
             }}
-            size={"sm"}
+            className="h-10 w-10 p-3"
           >
             <ChevronRight />
           </Button>
