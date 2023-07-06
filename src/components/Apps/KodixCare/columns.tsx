@@ -1,39 +1,15 @@
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { AppRouter } from "@/server/api/root";
 import { createColumnHelper } from "@tanstack/react-table";
 import type { inferRouterOutputs } from "@trpc/server";
-import {
-  Loader2,
-  MoreHorizontal,
-  Pencil,
-  PencilIcon,
-  Trash2,
-} from "lucide-react";
+import { MoreHorizontal, PencilIcon, Trash2 } from "lucide-react";
 import { Button } from "@ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { api } from "@/utils/api";
 import CancelationDialog from "./CancelationDialog";
 import EditEventDialog from "./EditEventDialog";
 
@@ -43,7 +19,7 @@ const columnHelper = createColumnHelper<CalendarTask>();
 
 export const columns = [
   columnHelper.accessor("eventId", {
-    header: ({ table }) => (
+    header: () => (
       <>
         {/* <Checkbox
           checked={table.getIsAllPageRowsSelected()}

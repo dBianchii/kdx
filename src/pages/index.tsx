@@ -12,6 +12,7 @@ const Home = () => {
   const { data: workspace } = api.workspace.getActiveWorkspace.useQuery(
     undefined,
     {
+      refetchOnWindowFocus: false,
       enabled: sessionData.data?.user !== undefined,
     }
   );

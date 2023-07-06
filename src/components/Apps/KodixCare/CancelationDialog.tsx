@@ -7,18 +7,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@ui/dropdown-menu";
 import { RadioGroup, RadioGroupItem } from "@ui/radio-group";
 import { Label } from "@ui/label";
-import { MoreHorizontal, Pencil, Trash2, Loader2 } from "lucide-react";
-import { Button } from "@ui/button";
+import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/utils/api";
 
@@ -59,36 +51,39 @@ export default function CancelationDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Exclude recurrent event</AlertDialogTitle>
-          <AlertDialogDescription className="mt-6">
-            <RadioGroup
-              className="flex flex-col space-y-2"
-              defaultValue="thisEvent"
-            >
-              <div className="flex">
-                <RadioGroupItem
-                  id="thisEvent"
-                  value={"thisEvent"}
-                  onClick={() => {
-                    setRadioValue("thisEvent");
-                  }}
-                />
-                <Label htmlFor="thisEvent" className="ml-2">
-                  This event
-                </Label>
-              </div>
-              <div className="flex">
-                <RadioGroupItem
-                  id="allEvents"
-                  value={"allEvents"}
-                  onClick={() => {
-                    setRadioValue("allEvents");
-                  }}
-                />
-                <Label htmlFor="allEvents" className="ml-2">
-                  All events
-                </Label>
-              </div>
-            </RadioGroup>
+          <AlertDialogDescription>
+            <div className="my-6">
+              <RadioGroup
+                className="flex flex-col space-y-2"
+                defaultValue="thisEvent"
+              >
+                <div className="flex">
+                  <RadioGroupItem
+                    id="thisEvent"
+                    value={"thisEvent"}
+                    onClick={() => {
+                      setRadioValue("thisEvent");
+                    }}
+                    className=""
+                  />
+                  <Label htmlFor="thisEvent" className="ml-2">
+                    This event
+                  </Label>
+                </div>
+                <div className="flex">
+                  <RadioGroupItem
+                    id="allEvents"
+                    value={"allEvents"}
+                    onClick={() => {
+                      setRadioValue("allEvents");
+                    }}
+                  />
+                  <Label htmlFor="allEvents" className="ml-2">
+                    All events
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="bg-background">

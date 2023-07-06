@@ -37,7 +37,6 @@ import {
   Trash2,
 } from "lucide-react";
 import CancelationDialog from "./CancelationDialog";
-import { AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { cn } from "@/components/ui/lib/utils";
 import {
   Popover,
@@ -45,7 +44,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import moment from "moment";
 import EditEventDialog from "./EditEventDialog";
 
 interface DataTableProps<TData> {

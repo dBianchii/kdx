@@ -52,7 +52,7 @@ const DateTimePicker = React.forwardRef<
   const { buttonProps } = useButton(_buttonProps, buttonRef);
   useInteractOutside({
     ref: contentRef,
-    onInteractOutside: (e) => {
+    onInteractOutside: () => {
       setOpen(false);
     },
   });
