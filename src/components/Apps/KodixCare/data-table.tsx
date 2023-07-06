@@ -33,6 +33,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
+  PencilIcon,
   Trash2,
 } from "lucide-react";
 import CancelationDialog from "./CancelationDialog";
@@ -45,6 +46,7 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import moment from "moment";
+import EditEventDialog from "./EditEventDialog";
 
 interface DataTableProps<TData> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -76,8 +78,10 @@ export function DataTable<TData>({
     },
   });
 
+  const [openCancelDialog, setOpenCancelDialog] = useState(false);
+  const [openEditDialog, setOpenEditDialog] = useState(false);
   return (
-    <div>
+    <div className="mt-8">
       <div className="flex justify-between">
         <div className="space-y-2">
           <Label htmlFor="search">Search...</Label>
@@ -145,7 +149,7 @@ export function DataTable<TData>({
         </div>
       </div>
 
-      <div className="rounded-md border">
+      <div className="mt-4 rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -181,28 +185,39 @@ export function DataTable<TData>({
                     data-state={row.getIsSelected() && "selected"}
                     key={row.id}
                   >
-                    <CancelationDialog
+                    <EditEventDialog
+                      open={openEditDialog}
+                      setOpen={setOpenEditDialog}
                       eventId={row.getValue("eventId")}
                       date={row.getValue("date")}
-                    >
-                      <ContextMenuTrigger className="contents">
-                        {row.getVisibleCells().map((cell) => (
-                          <TableCell key={cell.id}>
-                            {flexRender(cell.column.columnDef.cell, {
-                              ...cell.getContext(),
-                            })}
-                          </TableCell>
-                        ))}
-                      </ContextMenuTrigger>
-                      <ContextMenuContent>
-                        <AlertDialogTrigger asChild>
-                          <ContextMenuItem>
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete Event
-                          </ContextMenuItem>
-                        </AlertDialogTrigger>
-                      </ContextMenuContent>
-                    </CancelationDialog>
+                    />
+                    <CancelationDialog
+                      open={openCancelDialog}
+                      setOpen={setOpenCancelDialog}
+                      eventId={row.getValue("eventId")}
+                      date={row.getValue("date")}
+                    />
+                    <ContextMenuTrigger className="contents">
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>
+                          {flexRender(cell.column.columnDef.cell, {
+                            ...cell.getContext(),
+                          })}
+                        </TableCell>
+                      ))}
+                    </ContextMenuTrigger>
+                    <ContextMenuContent>
+                      <ContextMenuItem onClick={() => setOpenEditDialog(true)}>
+                        <PencilIcon className="mr-2 h-4 w-4" />
+                        Edit Event
+                      </ContextMenuItem>
+                      <ContextMenuItem
+                        onClick={() => setOpenCancelDialog(true)}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete Event
+                      </ContextMenuItem>
+                    </ContextMenuContent>
                   </TableRow>
                 </ContextMenu>
               ))

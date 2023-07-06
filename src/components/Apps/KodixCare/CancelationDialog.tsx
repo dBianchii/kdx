@@ -28,17 +28,18 @@ import { api } from "@/utils/api";
 export default function CancelationDialog({
   eventId,
   date,
-  children,
+  open,
+  setOpen,
 }: {
   eventId: string;
   date: Date;
-  children: React.ReactNode;
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const [radioValue, setRadioValue] = useState<"thisEvent" | "allEvents">(
     "thisEvent"
   );
   const [buttonLoading, setButtonLoading] = useState(false);
-  const [open, setOpen] = useState(false);
   const ctx = api.useContext();
   const { mutate: cancelEvent } = api.event.cancelEvent.useMutation({
     onMutate: () => {
@@ -55,7 +56,6 @@ export default function CancelationDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-      {children}
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Exclude recurrent event</AlertDialogTitle>
