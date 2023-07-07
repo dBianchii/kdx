@@ -95,6 +95,7 @@ export const eventRouter = createTRPCRouter({
         title: string;
         description: string | null;
         date: Date;
+        rule: string;
       }
 
       let calendarTasks: CalendarTask[] = [];
@@ -103,7 +104,7 @@ export const eventRouter = createTRPCRouter({
 
       eventGlobal.forEach((eventMaster) => {
         const rrule = rrulestr(eventMaster.rule);
-        const allDates = rrule.between(input.dateStart, input.dateEnd);
+        const allDates = rrule.between(input.dateStart, input.dateEnd, true);
 
         allDates.forEach((date) => {
           calendarTasks.push({
@@ -111,6 +112,7 @@ export const eventRouter = createTRPCRouter({
             title: eventMaster.eventInfo.title,
             description: eventMaster.eventInfo.description,
             date: date,
+            rule: eventMaster.rule,
           });
         });
       });
@@ -214,7 +216,7 @@ export const eventRouter = createTRPCRouter({
     .input(
       z
         .object({
-          eventId: z.string(),
+          eventId: z.string().cuid(),
         })
         .and(
           z.union([
@@ -282,6 +284,7 @@ export const eventRouter = createTRPCRouter({
         dateUntil: z.date().optional(),
         frequency: z.nativeEnum(Frequency).optional(),
         interval: z.number().optional(),
+
         allEvents: z.boolean().optional().default(false),
       })
     )
@@ -307,7 +310,7 @@ export const eventRouter = createTRPCRouter({
       // if (!eventMaster)
       //   throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
       // const updateData = {
-      // 	rule: eventMaster.rule,
+      //   rule: eventMaster.rule,
       //   title: title ?? eventMaster.eventInfo.title,
       //   description: description ?? eventMaster.eventInfo.description,
       //   DateStart: dateStart ?? eventMaster.DateStart,
