@@ -72,6 +72,7 @@ export default function EditEventDialog({
     until: RRule.fromString(calendarTask.rule).options.until
       ? moment(RRule.fromString(calendarTask.rule).options.until)
       : undefined,
+    count: RRule.fromString(calendarTask.rule).options.count ?? undefined,
   };
 
   const [title, setTitle] = useState(defaultState.title);
@@ -83,6 +84,7 @@ export default function EditEventDialog({
   const [until, setUntil] = useState<moment.Moment | undefined>(
     defaultState.until
   );
+  const [count, setCount] = useState<number | undefined>(defaultState.count);
 
   const [isFormChanged, setIsFormChanged] = useState(false);
 
@@ -109,15 +111,8 @@ export default function EditEventDialog({
       time !== defaultState.time ||
       frequency !== defaultState.frequency ||
       interval !== defaultState.interval ||
-      until !== defaultState.until;
-
-    console.log("title", title !== defaultState.title);
-    console.log("description", description !== defaultState.description);
-    console.log("from", !from.isSame(defaultState.from));
-    console.log("time", time !== defaultState.time);
-    console.log("frequency", frequency !== defaultState.frequency);
-    console.log("interval", interval !== defaultState.interval);
-    console.log("until", until !== defaultState.until);
+      until !== defaultState.until ||
+      count !== defaultState.count;
 
     setIsFormChanged(isChanged);
   }, [
@@ -128,6 +123,7 @@ export default function EditEventDialog({
     frequency,
     interval,
     until,
+    count,
     defaultState.title,
     defaultState.description,
     defaultState.from,
@@ -135,6 +131,7 @@ export default function EditEventDialog({
     defaultState.frequency,
     defaultState.interval,
     defaultState.until,
+    defaultState.count,
   ]);
 
   // const defaultState = {
@@ -161,12 +158,11 @@ export default function EditEventDialog({
   // }>(defaultState);
 
   const freqs = [RRule.DAILY, RRule.WEEKLY, RRule.MONTHLY, RRule.YEARLY];
-  const rule = new RRule({
+  const ruleForText = new RRule({
     freq: frequency,
     dtstart: from.toDate(),
     until: until ? until?.toDate() : undefined,
     interval: interval,
-    tzid: Intl.DateTimeFormat().resolvedOptions().timeZone,
   });
 
   function handleSubmitFormData() {
@@ -182,7 +178,6 @@ export default function EditEventDialog({
       second: 0,
       millisecond: 0,
     });
-    alert("sent");
     // editEvent({
     //   title: title,
     //   description: description,
@@ -201,6 +196,7 @@ export default function EditEventDialog({
     setFrequency(defaultState.frequency);
     setInterval(defaultState.interval);
     setUntil(defaultState.until);
+    setCount(defaultState.count);
   }
 
   return (
@@ -276,7 +272,9 @@ export default function EditEventDialog({
                 <Popover>
                   <PopoverTrigger>
                     <Button type="button" variant="outline" size="sm">
-                      {tzOffsetText(rule)}
+                      {count === 1
+                        ? "doesn't repeat"
+                        : tzOffsetText(ruleForText)}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent
@@ -287,6 +285,26 @@ export default function EditEventDialog({
                     <Command>
                       <CommandList>
                         <CommandGroup>
+                          <CommandItem
+                            onSelect={() => {
+                              setFrequency(RRule.DAILY);
+                              setInterval(1);
+                              setCount(1);
+                              setUntil(undefined);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                frequency === RRule.DAILY &&
+                                  interval === 1 &&
+                                  count === 1
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              )}
+                            />
+                            Doesn&apos;t repeat
+                          </CommandItem>
                           {freqs.map((freq, i) => (
                             <CommandItem
                               key={i}
@@ -294,12 +312,16 @@ export default function EditEventDialog({
                                 setInterval(1);
                                 setFrequency(freq);
                                 setUntil(undefined);
+                                setCount(undefined);
                               }}
                             >
                               <Check
                                 className={cn(
                                   "mr-2 h-4 w-4",
-                                  frequency === freq
+                                  frequency === freq &&
+                                    interval === 1 &&
+                                    !until &&
+                                    !count
                                     ? "opacity-100"
                                     : "opacity-0"
                                 )}
@@ -310,19 +332,27 @@ export default function EditEventDialog({
                           <CommandItem
                             onSelect={() => setPersonalizedRecurrenceOpen(true)}
                           >
-                            <span className="ml-2"></span>
-                            <Check className="invisible h-4 w-4" />
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                until || interval > 1
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              )}
+                            />
                             Custom...
                           </CommandItem>
                           <PersonalizedRecurrenceDialog
                             open={personalizedRecurrenceOpen}
                             setOpen={setPersonalizedRecurrenceOpen}
-                            defaultInterval={interval}
-                            setDefaultInterval={setInterval}
-                            defaultFrequency={frequency}
-                            setDefaultFrequency={setFrequency}
-                            defaultUntil={until}
-                            setDefaultUntil={setUntil}
+                            interval={interval}
+                            setInterval={setInterval}
+                            frequency={frequency}
+                            setFrequency={setFrequency}
+                            until={until}
+                            setUntil={setUntil}
+                            count={count}
+                            setCount={setCount}
                           />
                         </CommandGroup>
                       </CommandList>
@@ -346,6 +376,21 @@ export default function EditEventDialog({
                       type="submit"
                       size="sm"
                       disabled={buttonLoading || !isFormChanged}
+                      onClick={() =>
+                        alert(
+                          `
+											title: ${title}
+											description: ${description}
+											from: ${from ? from.toDate().toString() : "undefined"}
+											time: ${time}
+											frequency: ${frequency}
+											interval: ${interval}
+											until: ${until ? until.toDate().toString() : "undefined"}
+											count: ${count ?? "undefined"}
+
+											`
+                        )
+                      }
                     >
                       {buttonLoading ? (
                         <Loader2 className="mx-2 h-4 w-4 animate-spin" />

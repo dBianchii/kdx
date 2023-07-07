@@ -101,6 +101,7 @@ function CreateEventDialogButton() {
     frequency: RRule.DAILY,
     interval: 1,
     until: undefined,
+    count: 1,
   };
   const [title, setTitle] = useState(defaultState.title);
   const [description, setDescription] = useState(defaultState.description);
@@ -111,6 +112,8 @@ function CreateEventDialogButton() {
   const [until, setUntil] = useState<moment.Moment | undefined>(
     defaultState.until
   );
+  const [count, setCount] = useState<number | undefined>(defaultState.count);
+
   function revertStateToDefault() {
     setTitle(defaultState.title);
     setDescription(defaultState.description);
@@ -119,6 +122,7 @@ function CreateEventDialogButton() {
     setFrequency(defaultState.frequency);
     setInterval(defaultState.interval);
     setUntil(defaultState.until);
+    setCount(defaultState.count);
   }
 
   function handleSubmitFormData() {
@@ -144,7 +148,7 @@ function CreateEventDialogButton() {
     });
   }
 
-  const rule = new RRule({
+  const ruleForText = new RRule({
     freq: frequency,
     dtstart: from.toDate(),
     until: until ? until?.toDate() : undefined,
@@ -179,12 +183,14 @@ function CreateEventDialogButton() {
             <PersonalizedRecurrenceDialog
               open={personalizedRecurrenceOpen}
               setOpen={setPersonalizedRecurrenceOpen}
-              defaultInterval={interval}
-              setDefaultInterval={setInterval}
-              defaultFrequency={frequency}
-              setDefaultFrequency={setFrequency}
-              defaultUntil={until}
-              setDefaultUntil={setUntil}
+              interval={interval}
+              setInterval={setInterval}
+              frequency={frequency}
+              setFrequency={setFrequency}
+              until={until}
+              setUntil={setUntil}
+              count={count}
+              setCount={setCount}
             />
             <div className="space-y-4">
               <div className="flex flex-row gap-2">
@@ -239,7 +245,9 @@ function CreateEventDialogButton() {
                 <Popover>
                   <PopoverTrigger>
                     <Button type="button" variant="outline" size="sm">
-                      {tzOffsetText(rule)}
+                      {count === 1
+                        ? "doesn't repeat"
+                        : tzOffsetText(ruleForText)}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent
@@ -250,6 +258,26 @@ function CreateEventDialogButton() {
                     <Command>
                       <CommandList>
                         <CommandGroup>
+                          <CommandItem
+                            onSelect={() => {
+                              setFrequency(RRule.DAILY);
+                              setInterval(1);
+                              setCount(1);
+                              setUntil(undefined);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                frequency === RRule.DAILY &&
+                                  interval === 1 &&
+                                  count === 1
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              )}
+                            />
+                            Doesn&apos;t repeat
+                          </CommandItem>
                           {freqs.map((freq, i) => (
                             <CommandItem
                               key={i}
@@ -257,12 +285,16 @@ function CreateEventDialogButton() {
                                 setInterval(1);
                                 setFrequency(freq);
                                 setUntil(undefined);
+                                setCount(undefined);
                               }}
                             >
                               <Check
                                 className={cn(
                                   "mr-2 h-4 w-4",
-                                  frequency === freq
+                                  frequency === freq &&
+                                    interval === 1 &&
+                                    !until &&
+                                    !count
                                     ? "opacity-100"
                                     : "opacity-0"
                                 )}
@@ -273,8 +305,14 @@ function CreateEventDialogButton() {
                           <CommandItem
                             onSelect={() => setPersonalizedRecurrenceOpen(true)}
                           >
-                            <span className="ml-2"></span>
-                            <Check className="invisible h-4 w-4" />
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                until || interval > 1
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              )}
+                            />
                             Custom...
                           </CommandItem>
                         </CommandGroup>

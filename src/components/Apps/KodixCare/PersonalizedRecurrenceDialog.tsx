@@ -24,46 +24,52 @@ const freqs = [RRule.DAILY, RRule.WEEKLY, RRule.MONTHLY, RRule.YEARLY];
 export default function PersonalizedRecurrenceDialog({
   open,
   setOpen,
-  defaultInterval,
-  setDefaultInterval,
-  defaultFrequency,
-  setDefaultFrequency,
-  defaultUntil,
-  setDefaultUntil,
+  interval,
+  setInterval,
+  frequency,
+  setFrequency,
+  until,
+  setUntil,
+  count,
+  setCount,
 }: {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  defaultInterval: number;
-  setDefaultInterval: React.Dispatch<React.SetStateAction<number>>;
-  defaultFrequency: Frequency;
-  setDefaultFrequency: React.Dispatch<React.SetStateAction<Frequency>>;
-  defaultUntil: moment.Moment | undefined;
-  setDefaultUntil: React.Dispatch<
-    React.SetStateAction<moment.Moment | undefined>
-  >;
+  interval: number;
+  setInterval: React.Dispatch<React.SetStateAction<number>>;
+  frequency: Frequency;
+  setFrequency: React.Dispatch<React.SetStateAction<Frequency>>;
+  until: moment.Moment | undefined;
+  setUntil: React.Dispatch<React.SetStateAction<moment.Moment | undefined>>;
+  count: number | undefined;
+  setCount: React.Dispatch<React.SetStateAction<number | undefined>>;
 }) {
   useEffect(() => {
-    setStateToDefault();
+    discardDraft();
   }, [open]);
 
-  const [interval, setInterval] = useState(defaultInterval);
-  const [frequency, setFrequency] = useState(defaultFrequency);
-  const [until, setUntil] = useState(defaultUntil);
+  const [draftInterval, setDraftInterval] = useState(interval);
+  const [draftFrequency, setDraftFrequency] = useState(frequency);
+  const [draftUntil, setDraftUntil] = useState(until);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [draftCount, setDraftCount] = useState(count);
 
-  function setStateToDefault() {
-    setInterval(defaultInterval);
-    setFrequency(defaultFrequency);
-    setUntil(defaultUntil);
+  function discardDraft() {
+    setDraftInterval(interval);
+    setDraftFrequency(frequency);
+    setDraftUntil(until);
+    setDraftCount(count);
   }
-  function setNewDefaultState() {
-    setDefaultInterval(interval);
-    setDefaultFrequency(frequency);
-    setDefaultUntil(until);
+  function saveDraft() {
+    setInterval(draftInterval);
+    setFrequency(draftFrequency);
+    setUntil(draftUntil);
+    setCount(undefined); // We don't have count yet in the UI so we just set it to undefined
   }
 
   function closeDialog(openOrClose: boolean, save: boolean) {
-    if (save) setNewDefaultState();
-    else setStateToDefault();
+    if (save) saveDraft();
+    else discardDraft();
     setOpen(openOrClose);
   }
 
@@ -83,16 +89,16 @@ export default function PersonalizedRecurrenceDialog({
               type="number"
               min={1}
               aria-valuemin={1}
-              value={interval}
-              onChange={(e) => setInterval(parseInt(e.target.value))}
+              value={draftInterval}
+              onChange={(e) => setDraftInterval(parseInt(e.target.value))}
               placeholder="1"
               className="w-16"
             />
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" size="sm">
-                  {FrequencyToTxt(frequency).toLowerCase()}
-                  {interval !== 1 ? "s" : null}
+                  {FrequencyToTxt(draftFrequency).toLowerCase()}
+                  {draftInterval !== 1 ? "s" : null}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-300 p-0" side="bottom" align="start">
@@ -103,13 +109,15 @@ export default function PersonalizedRecurrenceDialog({
                         <CommandItem
                           key={i}
                           onSelect={() => {
-                            setFrequency(freq);
+                            setDraftFrequency(freq);
                           }}
                         >
                           <Check
                             className={cn(
                               "mr-2 h-4 w-4",
-                              frequency === freq ? "opacity-100" : "opacity-0"
+                              draftFrequency === freq
+                                ? "opacity-100"
+                                : "opacity-0"
                             )}
                           />
                           {FrequencyToTxt(freq).toLowerCase()}
@@ -125,17 +133,17 @@ export default function PersonalizedRecurrenceDialog({
             <div className="flex flex-col">
               <RadioGroup
                 className="mt-2 space-y-3"
-                defaultValue={until === undefined ? "1" : "0"}
+                defaultValue={draftUntil === undefined ? "1" : "0"}
               >
                 <span className="mt-4 font-medium">Ends:</span>
                 <div
                   className="flex items-center"
-                  onClick={() => setUntil(undefined)}
+                  onClick={() => setDraftUntil(undefined)}
                 >
                   <RadioGroupItem
                     value=""
                     id="r1"
-                    checked={until === undefined}
+                    checked={draftUntil === undefined}
                   />
                   <Label htmlFor="r1" className="ml-2">
                     Never
@@ -146,8 +154,8 @@ export default function PersonalizedRecurrenceDialog({
                     <RadioGroupItem
                       value="0"
                       id="r2"
-                      checked={until !== undefined}
-                      onClick={() => setUntil(defaultUntil ?? moment())}
+                      checked={draftUntil !== undefined}
+                      onClick={() => setDraftUntil(until ?? moment())}
                     />
                     <Label htmlFor="r2" className="ml-2">
                       At
@@ -156,12 +164,12 @@ export default function PersonalizedRecurrenceDialog({
 
                   <div className=" ml-8">
                     <DatePicker
-                      date={until?.toDate()}
-                      setDate={(date) => setUntil(moment(date))}
+                      date={draftUntil?.toDate()}
+                      setDate={(date) => setDraftUntil(moment(date))}
                       // disabledDate={(date) =>
                       //   date < new Date()
                       // }
-                      disabledPopover={until === undefined}
+                      disabledPopover={draftUntil === undefined}
                     />
                   </div>
                 </div>
