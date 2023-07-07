@@ -97,7 +97,7 @@ function CreateEventDialogButton() {
     title: "",
     description: "",
     from: moment(),
-    time: "",
+    time: "13:00",
     frequency: RRule.DAILY,
     interval: 1,
     until: undefined,
@@ -189,7 +189,7 @@ function CreateEventDialogButton() {
             <div className="space-y-4">
               <div className="flex flex-row gap-2">
                 <Input
-                  placeholder="Task title..."
+                  placeholder="Event title..."
                   onChange={(e) => setTitle(e.target.value)}
                   value={title}
                 />

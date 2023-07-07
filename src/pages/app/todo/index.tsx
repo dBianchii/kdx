@@ -100,7 +100,7 @@ export function CreateTaskDialogButton() {
           <Input
             className="my-2 border-none"
             type="text"
-            placeholder="Task title..."
+            placeholder="Event title..."
             onChange={(e) => setTitle(e.target.value)}
           ></Input>
           <Textarea

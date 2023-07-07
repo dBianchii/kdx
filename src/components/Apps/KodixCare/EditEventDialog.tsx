@@ -25,6 +25,12 @@ import { type inferRouterOutputs } from "@trpc/server";
 import { type AppRouter } from "@/server/api/root";
 import { tzOffsetText } from "@/utils/helpers";
 import PersonalizedRecurrenceDialog from "./PersonalizedRecurrenceDialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type RouterOutput = inferRouterOutputs<AppRouter>;
 type CalendarTask = RouterOutput["event"]["getAll"][number];
@@ -220,7 +226,7 @@ export default function EditEventDialog({
             <div className="space-y-4">
               <div className="flex flex-row gap-2">
                 <Input
-                  placeholder="Task title..."
+                  placeholder="Event title..."
                   onChange={(e) => setTitle(e.target.value)}
                   value={title}
                 />
@@ -332,17 +338,28 @@ export default function EditEventDialog({
             </div>
           </DialogDescription>
           <DialogFooter>
-            <Button
-              type="submit"
-              size="sm"
-              disabled={buttonLoading || !isFormChanged}
-            >
-              {buttonLoading ? (
-                <Loader2 className="mx-2 h-4 w-4 animate-spin" />
-              ) : (
-                <>Edit task</>
-              )}
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    <Button
+                      type="submit"
+                      size="sm"
+                      disabled={buttonLoading || !isFormChanged}
+                    >
+                      {buttonLoading ? (
+                        <Loader2 className="mx-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <>OK</>
+                      )}
+                    </Button>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent hidden={isFormChanged}>
+                  <p>Please change some data in order to accept the changes</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </DialogFooter>
         </form>
       </DialogContent>
