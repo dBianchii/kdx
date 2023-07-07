@@ -45,23 +45,26 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import EditEventDialog from "./EditEventDialog";
+import { type inferRouterOutputs } from "@trpc/server";
+import { type AppRouter } from "@/server/api/root";
 
-interface DataTableProps<TData> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  columns: ColumnDef<TData, any>[];
-  data: TData[];
-  selectedDate: Date | undefined;
-  setSelectedDate: React.Dispatch<React.SetStateAction<Date | undefined>>;
-  isLoading: boolean;
-}
+type RouterOutput = inferRouterOutputs<AppRouter>;
+type CalendarTask = RouterOutput["event"]["getAll"][number];
 
-export function DataTable<TData>({
+export function DataTable({
   columns,
   data,
   selectedDate,
   setSelectedDate,
   isLoading,
-}: DataTableProps<TData>) {
+}: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  columns: ColumnDef<CalendarTask, any>[];
+  data: CalendarTask[];
+  selectedDate: Date | undefined;
+  setSelectedDate: React.Dispatch<React.SetStateAction<Date | undefined>>;
+  isLoading: boolean;
+}) {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   const table = useReactTable({
@@ -184,10 +187,9 @@ export function DataTable<TData>({
                     key={row.id}
                   >
                     <EditEventDialog
+                      calendarTask={row.original}
                       open={openEditDialog}
                       setOpen={setOpenEditDialog}
-                      eventId={row.getValue("eventId")}
-                      date={row.getValue("date")}
                     />
                     <CancelationDialog
                       open={openCancelDialog}

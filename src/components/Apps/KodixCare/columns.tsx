@@ -40,10 +40,9 @@ export const columns = [
             aria-label="Select row"
           /> */}
           <EditEventDialog
+            calendarTask={info.row.original}
             open={openEditDialog}
             setOpen={setOpenEditDialog}
-            eventId={info.row.original.eventId}
-            date={info.row.original.date}
           />
           <CancelationDialog
             open={openCancelDialog}
