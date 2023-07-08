@@ -15,6 +15,22 @@ datasource db {
   relationMode = "prisma"
 }
 
+model AppWorkspaceConfig {
+  id            String     @id @default(cuid())
+  Parameters    String     @db.MediumText	 // Para qualquer configuração 
+
+  AppId         String
+  app          App        @relation("AppConfig", fields: [AppId], references: [id])
+  
+  WorkspaceId   String
+  workspace    Workspace  @relation("WorkspaceConfig", fields: [WorkspaceId], references: [id])
+
+  @@unique([AppId, WorkspaceId])
+  @@index([AppId])
+  @@index([WorkspaceId])
+	@@map("App_Workspace_Config")
+}
+
 model Workspace {
   id          String        @id @default(cuid())
   name        String
@@ -25,6 +41,9 @@ model Workspace {
   activeApps  App[]         @relation("AppWorkspace")
   Todo        Todo[]
   EventMaster EventMaster[]
+
+  workspaceConfigs AppWorkspaceConfig[] @relation("WorkspaceConfig")
+
 }
 
 model App {
@@ -38,6 +57,7 @@ model App {
   idpartnerDev     DevPartner  @relation(fields: [devPartnerId], references: [id])
   devPartnerId     String
   urlApp           String      @unique
+  appWorkspaceConfigs AppWorkspaceConfig[] @relation("AppConfig")
 
   @@index([devPartnerId])
 }
