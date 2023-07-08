@@ -91,7 +91,7 @@ export default function CancelationDialog({
                       setRadioValue("all");
                     }}
                   />
-                  <Label htmlFor="allEvents" className="ml-2">
+                  <Label htmlFor="all" className="ml-2">
                     All events
                   </Label>
                 </div>
