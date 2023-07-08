@@ -15,6 +15,21 @@ datasource db {
   relationMode = "prisma"
 }
 
+
+model App_Roles {
+  id               String      @id @default(cuid())
+  appId            String
+  roleName         String
+  roleDescription  String?
+  maxRoleUsers     Int         @default(0)
+  minRoleUsers     Int         @default(0)
+
+  app              App         @relation(fields: [appId], references: [id])
+  
+  @@index([appId])
+}
+
+
 model AppWorkspaceConfig {
   id            String     @id @default(cuid())
   Parameters    String     @db.MediumText	 // Para qualquer configuração 
@@ -58,6 +73,8 @@ model App {
   devPartnerId     String
   urlApp           String      @unique
   appWorkspaceConfigs AppWorkspaceConfig[] @relation("AppConfig")
+
+  appRoles         App_Roles[]
 
   @@index([devPartnerId])
 }
