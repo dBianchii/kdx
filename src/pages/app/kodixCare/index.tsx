@@ -36,7 +36,7 @@ import { DataTable } from "@/components/Apps/KodixCare/data-table";
 import { columns } from "@/components/Apps/KodixCare/columns";
 import moment from "moment";
 import { tzOffsetText } from "@/utils/helpers";
-import PersonalizedRecurrenceDialog from "@/components/Apps/KodixCare/PersonalizedRecurrenceDialog";
+import RecurrencePicker from "@/components/Apps/KodixCare/RecurrencePicker";
 
 export default function KodixCare() {
   //date Start should be the beginninig of the day
@@ -139,21 +139,16 @@ function CreateEventDialogButton() {
       millisecond: 0,
     });
     createEvent({
-      title: title,
-      description: description,
-      dateStart: from.toDate(),
+      title,
+      description,
+      from: from.toDate(),
       until: until ? until?.toDate() : undefined,
-      frequency: frequency,
-      interval: interval,
+      frequency,
+      interval,
+      count,
     });
   }
 
-  const ruleForText = new RRule({
-    freq: frequency,
-    dtstart: from.toDate(),
-    until: until ? until?.toDate() : undefined,
-    interval: interval,
-  });
   return (
     <Dialog
       open={open}
@@ -180,18 +175,6 @@ function CreateEventDialogButton() {
           className="space-y-8"
         >
           <DialogDescription>
-            <PersonalizedRecurrenceDialog
-              open={personalizedRecurrenceOpen}
-              setOpen={setPersonalizedRecurrenceOpen}
-              interval={interval}
-              setInterval={setInterval}
-              frequency={frequency}
-              setFrequency={setFrequency}
-              until={until}
-              setUntil={setUntil}
-              count={count}
-              setCount={setCount}
-            />
             <div className="space-y-4">
               <div className="flex flex-row gap-2">
                 <Input
@@ -242,84 +225,18 @@ function CreateEventDialogButton() {
                 </div>
               </div>
               <div className="flex flex-row gap-2">
-                <Popover>
-                  <PopoverTrigger>
-                    <Button type="button" variant="outline" size="sm">
-                      {count === 1
-                        ? "doesn't repeat"
-                        : tzOffsetText(ruleForText)}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    className="w-300 p-0"
-                    side="bottom"
-                    align={"start"}
-                  >
-                    <Command>
-                      <CommandList>
-                        <CommandGroup>
-                          <CommandItem
-                            onSelect={() => {
-                              setFrequency(RRule.DAILY);
-                              setInterval(1);
-                              setCount(1);
-                              setUntil(undefined);
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                frequency === RRule.DAILY &&
-                                  interval === 1 &&
-                                  count === 1
-                                  ? "opacity-100"
-                                  : "opacity-0"
-                              )}
-                            />
-                            Doesn&apos;t repeat
-                          </CommandItem>
-                          {freqs.map((freq, i) => (
-                            <CommandItem
-                              key={i}
-                              onSelect={() => {
-                                setInterval(1);
-                                setFrequency(freq);
-                                setUntil(undefined);
-                                setCount(undefined);
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  frequency === freq &&
-                                    interval === 1 &&
-                                    !until &&
-                                    !count
-                                    ? "opacity-100"
-                                    : "opacity-0"
-                                )}
-                              />
-                              Every {FrequencyToTxt(freq).toLowerCase()}
-                            </CommandItem>
-                          ))}
-                          <CommandItem
-                            onSelect={() => setPersonalizedRecurrenceOpen(true)}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                until || interval > 1
-                                  ? "opacity-100"
-                                  : "opacity-0"
-                              )}
-                            />
-                            Custom...
-                          </CommandItem>
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
+                <RecurrencePicker
+                  open={personalizedRecurrenceOpen}
+                  setOpen={setPersonalizedRecurrenceOpen}
+                  interval={interval}
+                  setInterval={setInterval}
+                  frequency={frequency}
+                  setFrequency={setFrequency}
+                  until={until}
+                  setUntil={setUntil}
+                  count={count}
+                  setCount={setCount}
+                />
               </div>
               <Textarea
                 placeholder="Add description..."

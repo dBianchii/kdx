@@ -8,7 +8,8 @@ function generateRule(
   startDate: Date | undefined,
   endDate: Date | undefined,
   frequency: Frequency,
-  interval: number | undefined
+  interval: number | undefined,
+  count: number | undefined
 ): string {
   const ruleSet = new RRuleSet();
   const rule = new RRule({
@@ -16,6 +17,7 @@ function generateRule(
     dtstart: startDate,
     until: endDate,
     interval,
+    count,
   });
   ruleSet.rrule(rule);
   return ruleSet.toString();
@@ -27,10 +29,11 @@ export const eventRouter = createTRPCRouter({
       z.object({
         title: z.string(),
         description: z.string().optional(),
-        dateStart: z.date(),
+        from: z.date(),
         until: z.date().optional(),
         frequency: z.nativeEnum(Frequency),
         interval: z.number().optional(),
+        count: z.number().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -45,14 +48,15 @@ export const eventRouter = createTRPCRouter({
         return await tx.eventMaster.create({
           data: {
             rule: generateRule(
-              input.dateStart,
+              input.from,
               input.until,
               input.frequency,
-              input.interval
+              input.interval,
+              input.count
             ),
             workspaceId: ctx.session.user.activeWorkspaceId,
             eventInfoId: eventInfo.id,
-            DateStart: input.dateStart,
+            DateStart: input.from,
             DateUntil: input.until,
           },
         });
@@ -280,95 +284,70 @@ export const eventRouter = createTRPCRouter({
         eventId: z.string().cuid(),
         title: z.string().optional(),
         description: z.string().optional(),
-        dateStart: z.date().optional(),
-        dateUntil: z.date().optional(),
+        from: z.date().optional(),
+        until: z.date().optional(),
         frequency: z.nativeEnum(Frequency).optional(),
         interval: z.number().optional(),
+        count: z.number().optional(),
 
         allEvents: z.boolean().optional().default(false),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // const {
-      //   eventId,
-      //   title,
-      //   description,
-      //   dateStart,
-      //   dateUntil,
-      //   frequency,
-      //   interval,
-      //   allEvents,
-      // } = input;
-      // const eventMaster = await ctx.prisma.eventMaster.findUnique({
-      //   where: {
-      //     id: eventId,
-      //   },
-      //   include: {
-      //     eventInfo: true,
-      //   },
-      // });
-      // if (!eventMaster)
-      //   throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
-      // const updateData = {
-      //   rule: eventMaster.rule,
-      //   title: title ?? eventMaster.eventInfo.title,
-      //   description: description ?? eventMaster.eventInfo.description,
-      //   DateStart: dateStart ?? eventMaster.DateStart,
-      //   DateUntil: dateUntil ?? eventMaster.DateUntil,
-      // };
-      // if (frequency !== undefined || interval !== undefined) {
-      //   updateData.rule = generateRule(
-      //     dateStart ?? eventMaster.DateStart,
-      //     dateUntil ?? eventMaster.DateUntil,
-      //     frequency ?? eventMaster.rule.frequency,
-      //     interval ?? eventMaster.rule.interval
-      //   );
-      // }
-      // let updatedEventMaster;
-      // if (allEvents) {
-      //   updatedEventMaster = await ctx.prisma.$transaction(async (tx) => {
-      //     await tx.eventMaster.updateMany({
-      //       where: {
-      //         id: eventId,
-      //       },
-      //       data: updateData,
-      //     });
-      //     return tx.eventMaster.findUnique({
-      //       where: {
-      //         id: eventId,
-      //       },
-      //       include: {
-      //         eventInfo: true,
-      //       },
-      //     });
-      //   });
-      // } else {
-      //   updatedEventMaster = await ctx.prisma.$transaction(async (tx) => {
-      //     const eventInfo = await tx.eventInfo.update({
-      //       where: {
-      //         id: eventMaster.eventInfoId,
-      //       },
-      //       data: {
-      //         title: updateData.title,
-      //         description: updateData.description,
-      //       },
-      //     });
-      //     return tx.eventMaster.update({
-      //       where: {
-      //         id: eventId,
-      //       },
-      //       data: {
-      //         rule: updateData.rule,
-      //         DateStart: updateData.DateStart,
-      //         DateUntil: updateData.DateUntil,
-      //         eventInfoId: eventInfo.id,
-      //       },
-      //       include: {
-      //         eventInfo: true,
-      //       },
-      //     });
-      //   });
-      // }
-      // return updatedEventMaster;
+      //const eventMaster = await ctx.prisma.eventMaster.findUnique({
+      //  where: {
+      //    id: input.eventId,
+      //  },
+      //});
+      //if (!eventMaster)
+      //  throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
+      //
+      //const rule = RRule.fromString(eventMaster.rule);
+      //rule.options.dtstart = input.from || rule.options.dtstart;
+      //rule.options.until = input.until || rule.options.until;
+      //rule.options.freq = input.frequency || rule.options.freq;
+      //rule.options.interval = input.interval || rule.options.interval;
+      //
+      //if (input.allEvents) {
+      //  await ctx.prisma.eventMaster.update({
+      //    where: {
+      //      id: input.eventId,
+      //    },
+      //    data: {
+      //      eventInfo: {
+      //        update: {
+      //          title: input.title,
+      //          description: input.description,
+      //        },
+      //      },
+      //      DateStart: input.from,
+      //      DateUntil: input.until,
+      //      rule: rule.toString(),
+      //    },
+      //  });
+      //
+      //  const exceptions = await ctx.prisma.eventException.findMany({
+      //    where: {
+      //      eventMasterId: input.eventId,
+      //    },
+      //  });
+      //} else {
+      //  await ctx.prisma.eventException.create({
+      //    data: {
+      //      eventMasterId: eventMaster.id,
+      //      originalDate: input.from,
+      //      newDate: input.from,
+      //      eventInfo: {
+      //        create:
+      //          input.title || input.description
+      //            ? {
+      //                title: input.title,
+      //                description: input.description,
+      //              }
+      //            : undefined,
+      //      },
+      //    },
+      //  });
+      //}
     }),
 });
