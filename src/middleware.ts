@@ -4,6 +4,7 @@ import type { NextRequest } from "next/server";
 // Trigger this middleware to run on the `/secret-page` route
 export const config = {
   matcher: "/testMiddleware",
+  runtime: "edge",
 };
 
 export function middleware(request: NextRequest) {
