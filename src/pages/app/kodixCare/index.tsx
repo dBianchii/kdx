@@ -82,6 +82,7 @@ function CreateEventDialogButton() {
     },
     onSuccess: () => {
       void ctx.event.getAll.invalidate();
+      revertStateToDefault();
       setOpen(false);
     },
     onSettled: () => {
