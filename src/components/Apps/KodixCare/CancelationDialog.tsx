@@ -28,9 +28,10 @@ export default function CancelationDialog({
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
-  const [radioValue, setRadioValue] = useState<"thisEvent" | "allEvents">(
-    "thisEvent"
+  const [radioValue, setRadioValue] = useState<"all" | "future" | "single">(
+    "single"
   );
+
   const [buttonLoading, setButtonLoading] = useState(false);
   const ctx = api.useContext();
   const { mutate: cancelEvent } = api.event.cancelEvent.useMutation({
@@ -59,23 +60,35 @@ export default function CancelationDialog({
               >
                 <div className="flex">
                   <RadioGroupItem
-                    id="thisEvent"
-                    value={"thisEvent"}
+                    id="single"
+                    value={"single"}
                     onClick={() => {
-                      setRadioValue("thisEvent");
+                      setRadioValue("single");
                     }}
                     className=""
                   />
-                  <Label htmlFor="thisEvent" className="ml-2">
+                  <Label htmlFor="single" className="ml-2">
                     This event
                   </Label>
                 </div>
                 <div className="flex">
                   <RadioGroupItem
-                    id="allEvents"
-                    value={"allEvents"}
+                    id="future"
+                    value={"future"}
                     onClick={() => {
-                      setRadioValue("allEvents");
+                      setRadioValue("future");
+                    }}
+                  />
+                  <Label htmlFor="future" className="ml-2">
+                    Future events
+                  </Label>
+                </div>
+                <div className="flex">
+                  <RadioGroupItem
+                    id="all"
+                    value={"all"}
+                    onClick={() => {
+                      setRadioValue("all");
                     }}
                   />
                   <Label htmlFor="allEvents" className="ml-2">
@@ -91,11 +104,17 @@ export default function CancelationDialog({
           <AlertDialogAction
             onClick={(e) => {
               e.preventDefault();
-              cancelEvent({
-                eventId,
-                originalDate: date,
-                allEvents: radioValue === "allEvents",
-              });
+              if (radioValue === "all")
+                cancelEvent({
+                  eventId,
+                  exclusionDefinition: "all",
+                });
+              else if (radioValue === "future" || radioValue === "single")
+                cancelEvent({
+                  eventId,
+                  exclusionDefinition: radioValue,
+                  date,
+                });
             }}
           >
             {buttonLoading ? (

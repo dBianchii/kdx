@@ -55,7 +55,6 @@ export default function KodixCare() {
       refetchOnWindowFocus: false,
     }
   );
-  console.log(moment(selectedDay).startOf("day").toDate());
 
   return (
     <>

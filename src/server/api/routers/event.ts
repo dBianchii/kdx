@@ -225,11 +225,11 @@ export const eventRouter = createTRPCRouter({
         .and(
           z.union([
             z.object({
-              allEvents: z.literal(true),
+              exclusionDefinition: z.literal("all"),
             }),
             z.object({
-              allEvents: z.literal(false).optional().default(false),
-              originalDate: z.date(),
+              exclusionDefinition: z.literal("future").or(z.literal("single")),
+              date: z.date(),
             }),
           ])
         )
@@ -243,16 +243,25 @@ export const eventRouter = createTRPCRouter({
       if (!eventMaster)
         throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
 
-      if (!input.allEvents) {
+      if (input.exclusionDefinition === "single") {
         const eventCancelation = await ctx.prisma.eventCancellation.create({
           data: {
             eventMasterId: eventMaster.id,
-            originalDate: input.originalDate,
+            originalDate: input.date,
           },
         });
         return eventCancelation;
-      } else {
-        await ctx.prisma.$transaction(async (tx) => {
+      } else if (input.exclusionDefinition === "future") {
+        return await ctx.prisma.eventMaster.update({
+          where: {
+            id: input.eventId,
+          },
+          data: {
+            DateUntil: input.date,
+          },
+        });
+      } else if (input.exclusionDefinition === "all") {
+        return await ctx.prisma.$transaction(async (tx) => {
           const where = {
             eventMasterId: eventMaster.id,
           };
