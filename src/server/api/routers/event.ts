@@ -38,12 +38,12 @@ async function deleteAllEvents(prisma: PrismaClient, eventMasterId: string) {
     await tx.eventDone.deleteMany({
       where,
     });
-    await tx.eventMaster.deleteMany({
+    await tx.eventInfo.deleteMany({
       where: {
         id: eventMasterId,
       },
     });
-    await tx.eventInfo.deleteMany({
+    await tx.eventMaster.deleteMany({
       where: {
         id: eventMasterId,
       },
@@ -256,7 +256,9 @@ export const eventRouter = createTRPCRouter({
               exclusionDefinition: z.literal("all"),
             }),
             z.object({
-              exclusionDefinition: z.literal("future").or(z.literal("single")),
+              exclusionDefinition: z
+                .literal("thisAndFuture")
+                .or(z.literal("single")),
               date: z.date(),
             }),
           ])
@@ -279,9 +281,8 @@ export const eventRouter = createTRPCRouter({
           },
         });
         return eventCancelation;
-      } else if (input.exclusionDefinition === "future") {
+      } else if (input.exclusionDefinition === "thisAndFuture") {
         const rule = rrulestr(eventMaster.rule);
-
         const occurences = rule.between(
           eventMaster.DateStart,
           input.date,
@@ -291,14 +292,16 @@ export const eventRouter = createTRPCRouter({
         if (!penultimateOccurence)
           return await deleteAllEvents(ctx.prisma, eventMaster.id);
 
-        rule.options.until = penultimateOccurence;
+        const options = RRule.parseString(eventMaster.rule);
+        options.until = penultimateOccurence;
+
         return await ctx.prisma.eventMaster.update({
           where: {
             id: input.eventId,
           },
           data: {
             DateUntil: penultimateOccurence,
-            rule: rule.toString(),
+            rule: new RRule(options).toString(),
           },
         });
       } else if (input.exclusionDefinition === "all") {

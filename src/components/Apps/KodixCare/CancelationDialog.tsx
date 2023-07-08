@@ -28,9 +28,9 @@ export default function CancelationDialog({
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
-  const [radioValue, setRadioValue] = useState<"all" | "future" | "single">(
-    "single"
-  );
+  const [radioValue, setRadioValue] = useState<
+    "all" | "thisAndFuture" | "single"
+  >("single");
 
   const [buttonLoading, setButtonLoading] = useState(false);
   const ctx = api.useContext();
@@ -73,14 +73,14 @@ export default function CancelationDialog({
                 </div>
                 <div className="flex">
                   <RadioGroupItem
-                    id="future"
-                    value={"future"}
+                    id="thisAndFuture"
+                    value={"thisAndFuture"}
                     onClick={() => {
-                      setRadioValue("future");
+                      setRadioValue("thisAndFuture");
                     }}
                   />
-                  <Label htmlFor="future" className="ml-2">
-                    Future events
+                  <Label htmlFor="thisAndFuture" className="ml-2">
+                    This and future events
                   </Label>
                 </div>
                 <div className="flex">
@@ -109,7 +109,10 @@ export default function CancelationDialog({
                   eventId,
                   exclusionDefinition: "all",
                 });
-              else if (radioValue === "future" || radioValue === "single")
+              else if (
+                radioValue === "thisAndFuture" ||
+                radioValue === "single"
+              )
                 cancelEvent({
                   eventId,
                   exclusionDefinition: radioValue,
