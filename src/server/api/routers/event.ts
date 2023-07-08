@@ -298,6 +298,7 @@ export const eventRouter = createTRPCRouter({
           },
           data: {
             DateUntil: penultimateOccurence,
+            rule: rule.toString(),
           },
         });
       } else if (input.exclusionDefinition === "all") {
@@ -320,14 +321,16 @@ export const eventRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      //const eventMaster = await ctx.prisma.eventMaster.findUnique({
-      //  where: {
-      //    id: input.eventId,
-      //  },
-      //});
-      //if (!eventMaster)
-      //  throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
-      //
+      const eventMaster = await ctx.prisma.eventMaster.findUnique({
+        where: {
+          id: input.eventId,
+        },
+      });
+      if (!eventMaster)
+        throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
+
+      const rule = rrulestr(eventMaster.rule);
+
       //const rule = RRule.fromString(eventMaster.rule);
       //rule.options.dtstart = input.from || rule.options.dtstart;
       //rule.options.until = input.until || rule.options.until;
