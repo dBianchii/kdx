@@ -309,19 +309,33 @@ export const eventRouter = createTRPCRouter({
       }
     }),
   edit: protectedProcedure
+    //* O count eu nao posso enviar com o single
+    //* O interval eu nao posso enviar com o single
+    //* O until eu nao posso enviar com o single
+    //* O frequency eu nao posso enviar com o single
     .input(
-      z.object({
-        eventId: z.string().cuid(),
-        title: z.string().optional(),
-        description: z.string().optional(),
-        from: z.date().optional(),
-        until: z.date().optional(),
-        frequency: z.nativeEnum(Frequency).optional(),
-        interval: z.number().optional(),
-        count: z.number().optional(),
+      z
+        .object({
+          eventId: z.string().cuid(),
+          title: z.string().optional(),
+          description: z.string().optional(),
+          from: z.date().optional(),
+        })
+        .and(
+          z.union([
+            z.object({
+              frequency: z.nativeEnum(Frequency).optional(),
+              until: z.date().optional(),
+              interval: z.number().optional(),
+              count: z.number().optional(),
 
-        allEvents: z.boolean().optional().default(false),
-      })
+              editDefinition: z.enum(["all", "thisAndFuture"]),
+            }),
+            z.object({
+              editDefinition: z.literal("single"),
+            }),
+          ])
+        )
     )
     .mutation(async ({ ctx, input }) => {
       const eventMaster = await ctx.prisma.eventMaster.findUnique({
@@ -332,14 +346,19 @@ export const eventRouter = createTRPCRouter({
       if (!eventMaster)
         throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
 
-      const rule = rrulestr(eventMaster.rule);
+      if (input.editDefinition === "all") {
+        const options = RRule.parseString(eventMaster.rule);
+        options.until = input.until || options.until;
+        options.dtstart = input.from || options.dtstart;
+        options.freq = input.frequency || options.freq;
+        options.interval = input.interval || options.interval;
+        options.count = input.count || options.count;
 
-      //const rule = RRule.fromString(eventMaster.rule);
-      //rule.options.dtstart = input.from || rule.options.dtstart;
-      //rule.options.until = input.until || rule.options.until;
-      //rule.options.freq = input.frequency || rule.options.freq;
-      //rule.options.interval = input.interval || rule.options.interval;
-      //
+        input.frequency;
+      }
+
+      //const newRule = new RRule(options);
+
       //if (input.allEvents) {
       //  await ctx.prisma.eventMaster.update({
       //    where: {
