@@ -15,35 +15,33 @@ datasource db {
   relationMode = "prisma"
 }
 
-
 model App_Roles {
-  id               String      @id @default(cuid())
-  appId            String
-  roleName         String
-  roleDescription  String?
-  maxRoleUsers     Int         @default(0)
-  minRoleUsers     Int         @default(0)
+  id              String  @id @default(cuid())
+  appId           String
+  roleName        String
+  roleDescription String?
+  maxRoleUsers    Int     @default(0)
+  minRoleUsers    Int     @default(0)
 
-  app              App         @relation(fields: [appId], references: [id])
-  
+  app App @relation(fields: [appId], references: [id])
+
   @@index([appId])
 }
 
-
 model AppWorkspaceConfig {
-  id            String     @id @default(cuid())
-  Parameters    String     @db.MediumText	 // Para qualquer configuração 
+  id         String @id @default(cuid())
+  Parameters String @db.MediumText // Para qualquer configuração 
 
-  AppId         String
-  app          App        @relation("AppConfig", fields: [AppId], references: [id])
-  
-  WorkspaceId   String
-  workspace    Workspace  @relation("WorkspaceConfig", fields: [WorkspaceId], references: [id])
+  AppId String
+  app   App    @relation("AppConfig", fields: [AppId], references: [id])
+
+  WorkspaceId String
+  workspace   Workspace @relation("WorkspaceConfig", fields: [WorkspaceId], references: [id])
 
   @@unique([AppId, WorkspaceId])
   @@index([AppId])
   @@index([WorkspaceId])
-	@@map("App_Workspace_Config")
+  @@map("App_Workspace_Config")
 }
 
 model Workspace {
@@ -58,23 +56,22 @@ model Workspace {
   EventMaster EventMaster[]
 
   workspaceConfigs AppWorkspaceConfig[] @relation("WorkspaceConfig")
-
 }
 
 model App {
-  id               String      @id @default(cuid())
-  name             String
-  description      String
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
-  subscriptionCost Decimal
-  activeWorkspaces Workspace[] @relation("AppWorkspace")
-  idpartnerDev     DevPartner  @relation(fields: [devPartnerId], references: [id])
-  devPartnerId     String
-  urlApp           String      @unique
+  id                  String               @id @default(cuid())
+  name                String
+  description         String
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  subscriptionCost    Decimal
+  activeWorkspaces    Workspace[]          @relation("AppWorkspace")
+  idpartnerDev        DevPartner           @relation(fields: [devPartnerId], references: [id])
+  devPartnerId        String
+  urlApp              String               @unique
   appWorkspaceConfigs AppWorkspaceConfig[] @relation("AppConfig")
 
-  appRoles         App_Roles[]
+  appRoles App_Roles[]
 
   @@index([devPartnerId])
 }
@@ -147,7 +144,7 @@ model EventMaster {
 
 model EventInfo {
   id          String  @id @default(cuid())
-  title       String
+  title       String?
   description String?
 
   EventException EventException[]

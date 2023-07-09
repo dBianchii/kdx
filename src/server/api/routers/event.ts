@@ -124,7 +124,7 @@ export const eventRouter = createTRPCRouter({
 
       interface CalendarTask {
         eventId: string;
-        title: string;
+        title: string | null;
         description: string | null;
         date: Date;
         rule: string;
@@ -344,11 +344,56 @@ export const eventRouter = createTRPCRouter({
         where: {
           id: input.eventId,
         },
+        include: {
+          eventInfo: true,
+        },
       });
       if (!eventMaster)
         throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
 
-      if (input.editDefinition === "all") {
+      if (input.editDefinition === "single") {
+        const rule = rrulestr(eventMaster.rule);
+        const occurences = rule.between(
+          eventMaster.DateStart,
+          input.selectedTimestamp,
+          true
+        );
+
+        if (occurences[occurences.length - 1] !== input.selectedTimestamp)
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Event not found",
+          });
+
+        if (input.title || input.description)
+          //Temos alteracao de title ou description
+          // await ctx.prisma.$transaction(async (tx) => {
+
+          // })
+          return await ctx.prisma.eventInfo.create({
+            data: {
+              title: input.title,
+              description: input.description,
+              EventException: {
+                create: {
+                  eventMasterId: eventMaster.id,
+                  originalDate: input.selectedTimestamp,
+                  newDate: input.from,
+                },
+              },
+            },
+          });
+
+        //Nao temos alteracao de title ou description
+        return await ctx.prisma.eventException.create({
+          data: {
+            eventMasterId: eventMaster.id,
+            originalDate: input.selectedTimestamp,
+            newDate: input.from,
+          },
+        });
+      } else if (input.editDefinition === "thisAndFuture") {
+      } else if (input.editDefinition === "all") {
         const options = RRule.parseString(eventMaster.rule);
         options.until = input.until || options.until;
         options.dtstart = input.from || options.dtstart;
@@ -359,7 +404,7 @@ export const eventRouter = createTRPCRouter({
         const newRule = new RRule(options);
         const newRuleString = newRule.toString();
 
-        const updated = await ctx.prisma.eventMaster.update({
+        return await ctx.prisma.eventMaster.update({
           where: {
             id: input.eventId,
           },
@@ -373,27 +418,6 @@ export const eventRouter = createTRPCRouter({
                 description: input.description,
               },
             },
-          },
-        });
-      } else if (input.editDefinition === "single") {
-        const rule = rrulestr(eventMaster.rule);
-        const occurences = rule.between(
-          eventMaster.DateStart,
-          input.selectedTimestamp,
-          true
-        );
-        if (occurences[occurences.length - 1] !== input.selectedTimestamp)
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Event not found",
-          });
-
-        const eventException = await ctx.prisma.eventException.create({
-          data: {
-            eventMasterId: eventMaster.id,
-            originalDate: eventMaster.DateStart,
-            newDate: input.selectedTimestamp,
-            eventInfoId: eventMaster.eventInfoId,
           },
         });
       }
