@@ -20,6 +20,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@ui/button";
 import { type Frequency, RRule } from "rrule";
 import { tzOffsetText } from "@/utils/helpers";
+import { AlertDialogCancel } from "@radix-ui/react-alert-dialog";
 
 const freqs = [RRule.DAILY, RRule.WEEKLY, RRule.MONTHLY, RRule.YEARLY];
 export default function RecurrencePicker({
@@ -45,10 +46,6 @@ export default function RecurrencePicker({
   count: number | undefined;
   setCount: React.Dispatch<React.SetStateAction<number | undefined>>;
 }) {
-  useEffect(() => {
-    discardDraft();
-  }, [open]);
-
   const [draftInterval, setDraftInterval] = useState(interval);
   const [draftFrequency, setDraftFrequency] = useState(frequency);
   const [draftUntil, setDraftUntil] = useState(until);

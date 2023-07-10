@@ -1,4 +1,3 @@
-import { FrequencyToTxt } from "@/components/FrequencyPicker";
 import {
   Dialog,
   DialogContent,
@@ -12,12 +11,11 @@ import { Textarea } from "@ui/textarea";
 import { api } from "@/utils/api";
 import { Popover, PopoverTrigger, PopoverContent } from "@ui/popover";
 import { Label } from "@ui/label";
-import { CommandList, CommandGroup, CommandItem, Command } from "@ui/command";
 import { format } from "date-fns";
-import { CalendarIcon, Check, Loader2 } from "lucide-react";
+import { CalendarIcon, Loader2 } from "lucide-react";
 import moment from "moment";
 import { Input } from "@ui/input";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@ui/button";
 import { type Frequency, RRule } from "rrule";
 import { Calendar } from "@ui/calendar";
@@ -41,8 +39,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { RadioGroup, RadioGroupItem } from "@radix-ui/react-radio-group";
-import { date } from "zod";
+import { RadioGroup, RadioGroupItem } from "@ui/radio-group";
 
 type RouterOutput = inferRouterOutputs<AppRouter>;
 type CalendarTask = RouterOutput["event"]["getAll"][number];
@@ -74,19 +71,21 @@ export default function EditEventDialog({
     useState(false);
   const [editDefinitionOpen, setEditDefinitionOpen] = useState(false);
 
-  const defaultState = {
-    calendarTask: calendarTask,
-    title: calendarTask.title,
-    description: calendarTask.description ?? "",
-    from: moment(calendarTask.date),
-    time: moment(calendarTask.date).format("HH:mm"),
-    frequency: RRule.fromString(calendarTask.rule).options.freq,
-    interval: RRule.fromString(calendarTask.rule).options.interval,
-    until: RRule.fromString(calendarTask.rule).options.until
-      ? moment(RRule.fromString(calendarTask.rule).options.until)
-      : undefined,
-    count: RRule.fromString(calendarTask.rule).options.count ?? undefined,
-  };
+  const defaultState = useMemo(() => {
+    return {
+      calendarTask: calendarTask,
+      title: calendarTask.title,
+      description: calendarTask.description ?? "",
+      from: moment(calendarTask.date),
+      time: moment(calendarTask.date).format("HH:mm"),
+      frequency: RRule.fromString(calendarTask.rule).options.freq,
+      interval: RRule.fromString(calendarTask.rule).options.interval,
+      until: RRule.fromString(calendarTask.rule).options.until
+        ? moment(RRule.fromString(calendarTask.rule).options.until)
+        : undefined,
+      count: RRule.fromString(calendarTask.rule).options.count ?? undefined,
+    };
+  }, [calendarTask]);
 
   const [title, setTitle] = useState(defaultState.title);
   const [description, setDescription] = useState(defaultState.description);
@@ -101,61 +100,35 @@ export default function EditEventDialog({
   const [definition, setDefinition] = useState<
     "single" | "thisAndFuture" | "all"
   >("single");
-  const [allowedDefinitions, setAllowedDefinitions] = useState<
+  const [allowedEditDefinitions, setAllowedEditDefinitions] = useState<
     ("single" | "thisAndFuture" | "all")[]
   >(["single", "thisAndFuture", "all"]);
 
   const [isFormChanged, setIsFormChanged] = useState(false);
 
+  // useEffect(() => {
+  //   setFrom((prev) =>
+  //     prev.set({
+  //       hour: parseInt(time.split(":")[0] ?? "0"),
+  //       minute: parseInt(time.split(":")[1] ?? "0"),
+  //       second: 0,
+  //       millisecond: 0,
+  //     })
+  //   );
+  //   setUntil((prev) =>
+  //     prev?.set({
+  //       hour: parseInt(time.split(":")[0] ?? "0"),
+  //       minute: parseInt(time.split(":")[1] ?? "0"),
+  //       second: 0,
+  //       millisecond: 0,
+  //     })
+  //   );
+  // }, [from, until, time]);
   useEffect(() => {
-    from.set({
-      hour: parseInt(time.split(":")[0] ?? "0"),
-      minute: parseInt(time.split(":")[1] ?? "0"),
-      second: 0,
-      millisecond: 0,
-    });
-    until?.set({
-      hour: parseInt(time.split(":")[0] ?? "0"),
-      minute: parseInt(time.split(":")[1] ?? "0"),
-      second: 0,
-      millisecond: 0,
-    });
-  }, [from, until, time]);
-
-  useEffect(() => {
-    const isSingleAllowed =
-      count === defaultState.count ||
-      until === defaultState.until ||
-      interval === defaultState.interval ||
-      frequency === defaultState.frequency;
-
-    if (!isSingleAllowed) {
-      setAllowedDefinitions((prev) => prev.filter((item) => item !== "single"));
-    } else {
-      !allowedDefinitions.includes("single") &&
-        setAllowedDefinitions((prev) => [...prev, "single"]);
-    }
-
-    const isAllAllowed = from === defaultState.from;
-    if (!isAllAllowed) {
-      setAllowedDefinitions((prev) => prev.filter((item) => item !== "all"));
-    } else {
-      !allowedDefinitions.includes("all") &&
-        setAllowedDefinitions((prev) => [...prev, "all"]);
-    }
-  }, [
-    count,
-    until,
-    interval,
-    frequency,
-    from,
-    allowedDefinitions,
-    defaultState.count,
-    defaultState.until,
-    defaultState.interval,
-    defaultState.frequency,
-    defaultState.from,
-  ]);
+    if (!allowedEditDefinitions.includes("single"))
+      setDefinition("thisAndFuture");
+    else setDefinition("single");
+  }, [allowedEditDefinitions]);
 
   useEffect(() => {
     const isChanged =
@@ -167,8 +140,33 @@ export default function EditEventDialog({
       interval !== defaultState.interval ||
       until !== defaultState.until ||
       count !== defaultState.count;
-
     setIsFormChanged(isChanged);
+
+    if (
+      count !== defaultState.count ||
+      interval !== defaultState.interval ||
+      (until && !until?.isSame(defaultState.until)) ||
+      frequency !== defaultState.frequency
+    ) {
+      setAllowedEditDefinitions((prev) =>
+        prev.filter((item) => item !== "single")
+      );
+    } else {
+      setAllowedEditDefinitions((prev) => {
+        !prev.includes("single") && prev.push("single");
+        return prev;
+      });
+    }
+    if (!from.isSame(defaultState.from)) {
+      setAllowedEditDefinitions((prev) =>
+        prev.filter((item) => item !== "all")
+      );
+    } else {
+      setAllowedEditDefinitions((prev) => {
+        !prev.includes("all") && prev.push("all");
+        return prev;
+      });
+    }
   }, [
     title,
     description,
@@ -220,6 +218,9 @@ export default function EditEventDialog({
     setInterval(defaultState.interval);
     setUntil(defaultState.until);
     setCount(defaultState.count);
+    setDefinition("single");
+
+    setAllowedEditDefinitions(["single", "thisAndFuture", "all"]);
   }
 
   function handleSubmitFormData() {
@@ -284,7 +285,17 @@ export default function EditEventDialog({
                     <Calendar
                       mode="single"
                       selected={from.toDate()}
-                      onSelect={(date) => date && setFrom(moment(date))}
+                      onSelect={(date) =>
+                        date &&
+                        setFrom(
+                          moment(date).set({
+                            hour: parseInt(time.split(":")[0] ?? "0"),
+                            minute: parseInt(time.split(":")[1] ?? "0"),
+                            second: 0,
+                            millisecond: 0,
+                          })
+                        )
+                      }
                       // disabled={(date) => date < new Date()}
                       initialFocus
                     />
@@ -352,7 +363,7 @@ export default function EditEventDialog({
           setOpen={setEditDefinitionOpen}
           definition={definition}
           setDefinition={setDefinition}
-          allowedDefinitions={allowedDefinitions}
+          allowedDefinitions={allowedEditDefinitions}
           submit={handleSubmitFormData}
         />
       </DialogContent>
@@ -380,7 +391,13 @@ function EditDefinitionDialog({
   const [buttonLoading, setButtonLoading] = useState(false);
 
   return (
-    <AlertDialog open={open} onOpenChange={setOpen}>
+    <AlertDialog
+      open={open}
+      onOpenChange={(boolean) => {
+        setOpen(boolean);
+        if (!boolean) setDefinition("single"); //Revert the data back to default when closing
+      }}
+    >
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Exclude recurrent event</AlertDialogTitle>
@@ -398,7 +415,7 @@ function EditDefinitionDialog({
                       onClick={() => {
                         setDefinition("single");
                       }}
-                      className=""
+                      checked={definition === "single"}
                     />
                     <Label htmlFor="single" className="ml-2">
                       This event
@@ -410,6 +427,7 @@ function EditDefinitionDialog({
                     <RadioGroupItem
                       id="thisAndFuture"
                       value={"thisAndFuture"}
+                      checked={definition === "thisAndFuture"}
                       onClick={() => {
                         setDefinition("thisAndFuture");
                       }}
@@ -424,6 +442,7 @@ function EditDefinitionDialog({
                     <RadioGroupItem
                       id="all"
                       value={"all"}
+                      checked={definition === "all"}
                       onClick={() => {
                         setDefinition("all");
                       }}
