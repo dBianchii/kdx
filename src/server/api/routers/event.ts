@@ -309,10 +309,11 @@ export const eventRouter = createTRPCRouter({
       }
     }),
   edit: protectedProcedure
-    //* O count eu nao posso enviar com o single
-    //* O interval eu nao posso enviar com o single
-    //* O until eu nao posso enviar com o single
-    //* O frequency eu nao posso enviar com o single
+    //* I cannot send count with single
+    //* I cannot send interval with single
+    //* I cannot send until with single
+    //* I cannot send frequency with single
+    //* I cannot send from with all
     .input(
       z
         .object({
@@ -321,7 +322,6 @@ export const eventRouter = createTRPCRouter({
 
           title: z.string().optional(),
           description: z.string().optional(),
-          from: z.date().optional(),
         })
         .and(
           z.union([
@@ -331,9 +331,19 @@ export const eventRouter = createTRPCRouter({
               interval: z.number().optional(),
               count: z.number().optional(),
 
-              editDefinition: z.enum(["all", "thisAndFuture"]),
+              from: z.date().optional(),
+              editDefinition: z.enum(["thisAndFuture"]),
             }),
             z.object({
+              frequency: z.nativeEnum(Frequency).optional(),
+              until: z.date().optional(),
+              interval: z.number().optional(),
+              count: z.number().optional(),
+
+              editDefinition: z.enum(["all"]),
+            }),
+            z.object({
+              from: z.date().optional(),
               editDefinition: z.literal("single"),
             }),
           ])
@@ -352,46 +362,176 @@ export const eventRouter = createTRPCRouter({
         throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
 
       if (input.editDefinition === "single") {
-        const rule = rrulestr(eventMaster.rule);
-        const occurences = rule.between(
+        //* Havemos description, title, from e selectedTimestamp.
+
+        //* Havemos um selectedTimestamp.
+        //* Temos que procurar se temos uma ocorrencia advinda do RRULE do master que bate com o selectedTimestamp, ou se temos uma exceção que bate com o selectedTimestamp.
+        //* Se não tivermos nenhum, temos que gerar um erro.
+        const evtMasterRule = rrulestr(eventMaster.rule);
+        const occurences = evtMasterRule.between(
           eventMaster.DateStart,
           input.selectedTimestamp,
           true
         );
+        const foundTimestamp = occurences.find(
+          (x) => x === input.selectedTimestamp
+        );
+        if (foundTimestamp) {
+          //* Ocorrencia encontrada. Temos que verificar se temos uma exceção para ela.
+          const eventException = await ctx.prisma.eventException.findFirst({
+            where: {
+              eventMasterId: eventMaster.id,
+              newDate: input.selectedTimestamp,
+            },
+          });
+
+          if (eventException) {
+            //* Temos uma ocorrencia e uma exceção com o MESMO selectedTimestamp. Isso significa que o usuário quer editar a exceção.
+            //* Aqui, o usuário pode alterar o title e o description ou o from da exceção.
+            return await ctx.prisma.eventException.update({
+              where: {
+                id: eventException.id,
+              },
+              data: {
+                newDate: input.from,
+                EventInfo: {
+                  update: {
+                    description: input.description,
+                    title: input.title,
+                  },
+                },
+              },
+            });
+            //! END OF PROCEDURE
+          } else {
+            //* Não temos uma exceção para o selectedTimestamp. Isso significa que o usuário quer editar o master.
+            //* Aqui, o usuário pode alterar o title e o description ou o from do master.
+            return await ctx.prisma.eventMaster.update({
+              where: {
+                id: eventMaster.id,
+              },
+              data: {
+                DateStart: input.from,
+                eventInfo: {
+                  upsert: {
+                    //* Upsert é um update ou um create. Se não existir, cria. Se existir, atualiza.
+                    create: {
+                      description: input.description,
+                      title: input.title,
+                    },
+                    update: {
+                      description: input.description,
+                      title: input.title,
+                    },
+                  },
+                },
+              },
+            });
+            //! END OF PROCEDURE
+          }
+        } else {
+          //* Não temos uma ocorrencia para o selectedTimestamp. Isso significa que o usuário quer editar o master.
+          const eventException = await ctx.prisma.eventException.findFirst({
+            where: {
+              eventMasterId: eventMaster.id,
+              newDate: input.selectedTimestamp,
+            },
+          });
+
+          if (!eventException) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "Event not found",
+            });
+          }
+        }
 
         if (occurences[occurences.length - 1] !== input.selectedTimestamp)
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Event not found",
           });
+        //
 
-        if (input.title || input.description)
-          //Temos alteracao de title ou description
-          // await ctx.prisma.$transaction(async (tx) => {
+        // await ctx.prisma.$transaction(async (tx) => {
+        //   if (input.editDefinition === "single") {
+        //     //como sou single, eu não consigo alterar o rule.
+        //     //se tiver title ou description, eu tenho que criar um novo eventInfo
+        //     //se tiver from, eu tenho que criar um novo eventException
 
-          // })
-          return await ctx.prisma.eventInfo.create({
-            data: {
-              title: input.title,
-              description: input.description,
-              EventException: {
-                create: {
-                  eventMasterId: eventMaster.id,
-                  originalDate: input.selectedTimestamp,
-                  newDate: input.from,
-                },
-              },
-            },
-          });
+        // 		//Antes de tudo, preciso checar se o evento que eu estou tentando editar nao foi
 
-        //Nao temos alteracao de title ou description
-        return await ctx.prisma.eventException.create({
-          data: {
-            eventMasterId: eventMaster.id,
-            originalDate: input.selectedTimestamp,
-            newDate: input.from,
-          },
-        });
+        //     const { selectedTimestamp, description, title, from } = input;
+
+        //     if (description || title)
+        //       //Como eu tenho description ou title, eu tenho que criar um novo eventInfo
+        //       return await tx.eventInfo.create({
+        //         data: {
+        //           title: input.title,
+        //           description: input.description,
+        //           EventException: {
+        //             create: {
+        //               EventMaster: {
+        //                 connect: {
+        //                   id: eventMaster.id,
+        //                 },
+        //               },
+        //               originalDate: selectedTimestamp,
+        //               newDate: from,
+        //             },
+        //           },
+        //         },
+        //       });
+        //     //Se eu nao tenho description ou title, eu nao preciso criar um novo eventInfo. Eu posso apenas criar um novo eventException
+        //     await tx.eventMaster.update({
+        //       where: {
+        //         id: eventMaster.id,
+        //       },
+        //       data: {
+        //         DateStart: from,
+        //         EventExceptions: {
+        //           create: {
+        //             originalDate: selectedTimestamp,
+        //             newDate: from,
+        //           },
+        //         },
+        //       },
+        //     });
+        //   }
+        //   return await tx.eventInfo.update({
+        //     where: {
+        //       id: eventMaster.eventInfoId,
+        //     },
+        //     data: {
+        //       title: input.title,
+        //       description: input.description,
+        //     },
+        //   });
+        // });
+
+        // //Temos alteracao de title ou description
+        // return await ctx.prisma.eventInfo.create({
+        //   data: {
+        //     title: input.title,
+        //     description: input.description,
+        //     EventException: {
+        //       create: {
+        //         eventMasterId: eventMaster.id,
+        //         originalDate: input.selectedTimestamp,
+        //         newDate: input.from,
+        //       },
+        //     },
+        //   },
+        // });
+
+        // //Nao temos alteracao de title ou description
+        // return await ctx.prisma.eventException.create({
+        //   data: {
+        //     eventMasterId: eventMaster.id,
+        //     originalDate: input.selectedTimestamp,
+        //     newDate: input.from,
+        //   },
+        // });
       } else if (input.editDefinition === "thisAndFuture") {
       } else if (input.editDefinition === "all") {
         const options = RRule.parseString(eventMaster.rule);
