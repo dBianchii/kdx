@@ -31,6 +31,18 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { RadioGroup, RadioGroupItem } from "@radix-ui/react-radio-group";
+import { date } from "zod";
 
 type RouterOutput = inferRouterOutputs<AppRouter>;
 type CalendarTask = RouterOutput["event"]["getAll"][number];
@@ -60,6 +72,7 @@ export default function EditEventDialog({
   const [buttonLoading, setButtonLoading] = useState(false);
   const [personalizedRecurrenceOpen, setPersonalizedRecurrenceOpen] =
     useState(false);
+  const [editDefinitionOpen, setEditDefinitionOpen] = useState(false);
 
   const defaultState = {
     calendarTask: calendarTask,
@@ -85,6 +98,12 @@ export default function EditEventDialog({
     defaultState.until
   );
   const [count, setCount] = useState<number | undefined>(defaultState.count);
+  const [definition, setDefinition] = useState<
+    "single" | "thisAndFuture" | "all"
+  >("single");
+  const [allowedDefinitions, setAllowedDefinitions] = useState<
+    ("single" | "thisAndFuture" | "all")[]
+  >(["single", "thisAndFuture", "all"]);
 
   const [isFormChanged, setIsFormChanged] = useState(false);
 
@@ -102,6 +121,41 @@ export default function EditEventDialog({
       millisecond: 0,
     });
   }, [from, until, time]);
+
+  useEffect(() => {
+    const isSingleAllowed =
+      count === defaultState.count ||
+      until === defaultState.until ||
+      interval === defaultState.interval ||
+      frequency === defaultState.frequency;
+
+    if (!isSingleAllowed) {
+      setAllowedDefinitions((prev) => prev.filter((item) => item !== "single"));
+    } else {
+      !allowedDefinitions.includes("single") &&
+        setAllowedDefinitions((prev) => [...prev, "single"]);
+    }
+
+    const isAllAllowed = from === defaultState.from;
+    if (!isAllAllowed) {
+      setAllowedDefinitions((prev) => prev.filter((item) => item !== "all"));
+    } else {
+      !allowedDefinitions.includes("all") &&
+        setAllowedDefinitions((prev) => [...prev, "all"]);
+    }
+  }, [
+    count,
+    until,
+    interval,
+    frequency,
+    from,
+    allowedDefinitions,
+    defaultState.count,
+    defaultState.until,
+    defaultState.interval,
+    defaultState.frequency,
+    defaultState.from,
+  ]);
 
   useEffect(() => {
     const isChanged =
@@ -157,37 +211,6 @@ export default function EditEventDialog({
   //   until: moment.Moment | undefined;
   // }>(defaultState);
 
-  const freqs = [RRule.DAILY, RRule.WEEKLY, RRule.MONTHLY, RRule.YEARLY];
-  const ruleForText = new RRule({
-    freq: frequency,
-    dtstart: from.toDate(),
-    until: until ? until?.toDate() : undefined,
-    interval: interval,
-  });
-
-  function handleSubmitFormData() {
-    from.set({
-      hour: parseInt(time.split(":")[0] ?? "0"),
-      minute: parseInt(time.split(":")[1] ?? "0"),
-      second: 0,
-      millisecond: 0,
-    });
-    until?.set({
-      hour: parseInt(time.split(":")[0] ?? "0"),
-      minute: parseInt(time.split(":")[1] ?? "0"),
-      second: 0,
-      millisecond: 0,
-    });
-    // editEvent({
-    //   title: title,
-    //   description: description,
-    //   dateStart: from.toDate(),
-    //   until: neverEnds ? undefined : until?.toDate(),
-    //   frequency: frequency,
-    //   interval: interval,
-    // });
-  }
-
   function revertStateToDefault() {
     setTitle(defaultState.title);
     setDescription(defaultState.description);
@@ -197,6 +220,23 @@ export default function EditEventDialog({
     setInterval(defaultState.interval);
     setUntil(defaultState.until);
     setCount(defaultState.count);
+  }
+
+  function handleSubmitFormData() {
+    const idObj = calendarTask.eventExceptionId
+      ? { eventExceptionId: calendarTask.eventExceptionId }
+      : { eventMasterId: calendarTask.eventMasterId };
+
+    // editEvent({
+    //   ...idObj,
+    //   selectedTimestamp: from.toDate(),
+    //   title: title || undefined,
+    //   description: description,
+    //   from: from.toDate(),
+    //   until: until?.toDate(),
+    //   frequency: frequency,
+    //   interval: interval,
+    // });
   }
 
   return (
@@ -211,125 +251,207 @@ export default function EditEventDialog({
         <DialogHeader>
           <DialogTitle>Edit Event</DialogTitle>
         </DialogHeader>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSubmitFormData();
-          }}
-          className="space-y-8"
-        >
-          <DialogDescription>
-            <div className="space-y-4">
-              <div className="flex flex-row gap-2">
-                <Input
-                  placeholder="Event title..."
-                  onChange={(e) => setTitle(e.target.value)}
-                  value={title}
-                />
-              </div>
-              <div className="flex flex-row gap-4">
-                <div className="flex flex-col space-y-2">
-                  <Label>From</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-[200px] pl-3 text-left font-normal",
-                          !from && "text-muted-foreground"
-                        )}
-                      >
-                        {from ? (
-                          format(from.toDate(), "PPP")
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={from.toDate()}
-                        onSelect={(date) => date && setFrom(moment(date))}
-                        // disabled={(date) => date < new Date()}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                <div className="flex flex-col space-y-2">
-                  <Label className="invisible">From</Label>
-                  <Input
-                    type="time"
-                    value={time}
-                    onChange={(e) => setTime(e.target.value)}
-                    className="w-26"
-                  />
-                </div>
-              </div>
-              <div className="flex flex-row gap-2">
-                <RecurrencePicker
-                  open={personalizedRecurrenceOpen}
-                  setOpen={setPersonalizedRecurrenceOpen}
-                  interval={interval}
-                  setInterval={setInterval}
-                  frequency={frequency}
-                  setFrequency={setFrequency}
-                  until={until}
-                  setUntil={setUntil}
-                  count={count}
-                  setCount={setCount}
-                />
-              </div>
-              <Textarea
-                placeholder="Add description..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              ></Textarea>
+        <DialogDescription>
+          <div className="space-y-4">
+            <div className="flex flex-row gap-2">
+              <Input
+                placeholder="Event title..."
+                onChange={(e) => setTitle(e.target.value)}
+                value={title ?? ""}
+              />
             </div>
-          </DialogDescription>
-          <DialogFooter>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div>
+            <div className="flex flex-row gap-4">
+              <div className="flex flex-col space-y-2">
+                <Label>From</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
                     <Button
-                      type="submit"
-                      size="sm"
-                      disabled={buttonLoading || !isFormChanged}
-                      onClick={() =>
-                        alert(
-                          `
-											title: ${title}
-											description: ${description}
-											from: ${from ? from.toDate().toString() : "undefined"}
-											time: ${time}
-											frequency: ${frequency}
-											interval: ${interval}
-											until: ${until ? until.toDate().toString() : "undefined"}
-											count: ${count ?? "undefined"}
-
-											`
-                        )
-                      }
-                    >
-                      {buttonLoading ? (
-                        <Loader2 className="mx-2 h-4 w-4 animate-spin" />
-                      ) : (
-                        <>OK</>
+                      variant={"outline"}
+                      className={cn(
+                        "w-[200px] pl-3 text-left font-normal",
+                        !from && "text-muted-foreground"
                       )}
+                    >
+                      {from ? (
+                        format(from.toDate(), "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                     </Button>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent hidden={isFormChanged}>
-                  <p>Please change some data in order to accept the changes</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </DialogFooter>
-        </form>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={from.toDate()}
+                      onSelect={(date) => date && setFrom(moment(date))}
+                      // disabled={(date) => date < new Date()}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="flex flex-col space-y-2">
+                <Label className="invisible">From</Label>
+                <Input
+                  type="time"
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  className="w-26"
+                />
+              </div>
+            </div>
+            <div className="flex flex-row gap-2">
+              <RecurrencePicker
+                open={personalizedRecurrenceOpen}
+                setOpen={setPersonalizedRecurrenceOpen}
+                interval={interval}
+                setInterval={setInterval}
+                frequency={frequency}
+                setFrequency={setFrequency}
+                until={until}
+                setUntil={setUntil}
+                count={count}
+                setCount={setCount}
+              />
+            </div>
+            <Textarea
+              placeholder="Add description..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            ></Textarea>
+          </div>
+        </DialogDescription>
+        <DialogFooter>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <Button
+                    type="submit"
+                    size="sm"
+                    disabled={buttonLoading || !isFormChanged}
+                    onClick={() => setEditDefinitionOpen(true)}
+                  >
+                    {buttonLoading ? (
+                      <Loader2 className="mx-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <>OK</>
+                    )}
+                  </Button>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent hidden={isFormChanged}>
+                <p>Please change some data in order to accept the changes</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </DialogFooter>
+        <EditDefinitionDialog
+          open={editDefinitionOpen}
+          setOpen={setEditDefinitionOpen}
+          definition={definition}
+          setDefinition={setDefinition}
+          allowedDefinitions={allowedDefinitions}
+          submit={handleSubmitFormData}
+        />
       </DialogContent>
     </Dialog>
+  );
+}
+
+function EditDefinitionDialog({
+  open,
+  setOpen,
+  definition,
+  setDefinition,
+  allowedDefinitions,
+  submit,
+}: {
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  definition: "single" | "thisAndFuture" | "all";
+  setDefinition: React.Dispatch<
+    React.SetStateAction<"single" | "thisAndFuture" | "all">
+  >;
+  allowedDefinitions: ("single" | "thisAndFuture" | "all")[];
+  submit: (definition: "single" | "thisAndFuture" | "all") => void;
+}) {
+  const [buttonLoading, setButtonLoading] = useState(false);
+
+  return (
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Exclude recurrent event</AlertDialogTitle>
+          <AlertDialogDescription>
+            <div className="my-6">
+              <RadioGroup
+                className="flex flex-col space-y-2"
+                defaultValue={definition}
+              >
+                {allowedDefinitions.includes("single") && (
+                  <div className="flex">
+                    <RadioGroupItem
+                      id="single"
+                      value={"single"}
+                      onClick={() => {
+                        setDefinition("single");
+                      }}
+                      className=""
+                    />
+                    <Label htmlFor="single" className="ml-2">
+                      This event
+                    </Label>
+                  </div>
+                )}
+                {allowedDefinitions.includes("thisAndFuture") && (
+                  <div className="flex">
+                    <RadioGroupItem
+                      id="thisAndFuture"
+                      value={"thisAndFuture"}
+                      onClick={() => {
+                        setDefinition("thisAndFuture");
+                      }}
+                    />
+                    <Label htmlFor="thisAndFuture" className="ml-2">
+                      This and future events
+                    </Label>
+                  </div>
+                )}
+                {allowedDefinitions.includes("all") && (
+                  <div className="flex">
+                    <RadioGroupItem
+                      id="all"
+                      value={"all"}
+                      onClick={() => {
+                        setDefinition("all");
+                      }}
+                    />
+                    <Label htmlFor="all" className="ml-2">
+                      All events
+                    </Label>
+                  </div>
+                )}
+              </RadioGroup>
+            </div>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter className="bg-background">
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={() => {
+              submit(definition);
+            }}
+          >
+            {buttonLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <>OK</>
+            )}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

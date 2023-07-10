@@ -194,7 +194,8 @@ export function DataTable({
                     <CancelationDialog
                       open={openCancelDialog}
                       setOpen={setOpenCancelDialog}
-                      eventId={row.getValue("eventId")}
+                      eventMasterId={row.original.eventMasterId}
+                      eventExceptionId={row.original.eventExceptionId}
                       date={row.getValue("date")}
                     />
                     <ContextMenuTrigger className="contents">

@@ -18,16 +18,21 @@ import { api } from "@/utils/api";
  * To use this this component, you need to wrap it around a AlertDialogTrigger component.
  */
 export default function CancelationDialog({
-  eventId,
+  eventMasterId,
+  eventExceptionId,
   date,
   open,
   setOpen,
 }: {
-  eventId: string;
+  eventMasterId: string | undefined;
+  eventExceptionId: string | undefined;
   date: Date;
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
+  if (!eventMasterId && !eventExceptionId)
+    throw new Error("eventMasterId or eventExceptionId must be defined");
+
   const [radioValue, setRadioValue] = useState<
     "all" | "thisAndFuture" | "single"
   >("single");
@@ -104,9 +109,14 @@ export default function CancelationDialog({
           <AlertDialogAction
             onClick={(e) => {
               e.preventDefault();
+
+              const objWithId = eventExceptionId
+                ? { eventExceptionId }
+                : { eventMasterId };
+
               if (radioValue === "all")
                 cancelEvent({
-                  eventId,
+                  ...objWithId,
                   exclusionDefinition: "all",
                 });
               else if (
@@ -114,7 +124,7 @@ export default function CancelationDialog({
                 radioValue === "single"
               )
                 cancelEvent({
-                  eventId,
+                  ...objWithId,
                   exclusionDefinition: radioValue,
                   date,
                 });

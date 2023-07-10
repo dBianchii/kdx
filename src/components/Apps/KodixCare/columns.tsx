@@ -18,7 +18,7 @@ type CalendarTask = RouterOutput["event"]["getAll"][number];
 const columnHelper = createColumnHelper<CalendarTask>();
 
 export const columns = [
-  columnHelper.accessor("eventId", {
+  columnHelper.accessor("eventMasterId", {
     header: () => (
       <>
         {/* <Checkbox
@@ -47,7 +47,8 @@ export const columns = [
           <CancelationDialog
             open={openCancelDialog}
             setOpen={setOpenCancelDialog}
-            eventId={info.row.original.eventId}
+            eventMasterId={info.row.original.eventMasterId}
+            eventExceptionId={info.row.original.eventExceptionId}
             date={info.row.original.date}
           />
           <DropdownMenu>
