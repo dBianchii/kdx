@@ -153,9 +153,9 @@ model EventInfo {
 }
 
 model EventException {
-  id           String    @id @default(cuid())
+  id           String   @id @default(cuid())
   originalDate DateTime
-  newDate      DateTime?
+  newDate      DateTime
 
   EventMaster   EventMaster @relation(fields: [eventMasterId], references: [id])
   eventMasterId String

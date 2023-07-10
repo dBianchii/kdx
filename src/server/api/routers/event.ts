@@ -228,19 +228,14 @@ export const eventRouter = createTRPCRouter({
               eventExceptionId: foundException.id,
               eventMasterId: undefined,
             }; //Altero o CalendarTask para ter o eventExceptionId e não ter o eventMasterId
-            if (foundException.newDate) {
-              //Temos alteraçao de data
-              if (
-                moment(input.dateStart).isSameOrBefore(
-                  foundException.newDate
-                ) &&
-                moment(input.dateEnd).isSameOrAfter(foundException.newDate)
-              ) {
-                calendarTask.date = foundException.newDate;
-              } else {
-                //Temos exclusão do calendarTask
-                return null;
-              }
+            if (
+              moment(input.dateStart).isSameOrBefore(foundException.newDate) &&
+              moment(input.dateEnd).isSameOrAfter(foundException.newDate)
+            ) {
+              calendarTask.date = foundException.newDate;
+            } else {
+              //Temos exclusão do calendarTask
+              return null;
             }
 
             if (foundException.eventInfoId) {
@@ -469,10 +464,7 @@ export const eventRouter = createTRPCRouter({
             await ctx.prisma.eventException.findFirstOrThrow({
               where: {
                 id: input.eventExceptionId,
-                OR: [
-                  { newDate: input.selectedTimestamp },
-                  { originalDate: input.selectedTimestamp },
-                ],
+                newDate: input.selectedTimestamp,
               },
             });
 
@@ -543,7 +535,7 @@ export const eventRouter = createTRPCRouter({
                     },
                   },
                   originalDate: foundTimestamp,
-                  newDate: input.from,
+                  newDate: input.from || foundTimestamp,
                 },
               },
             },
@@ -555,7 +547,7 @@ export const eventRouter = createTRPCRouter({
             data: {
               eventMasterId: eventMaster.id,
               originalDate: foundTimestamp,
-              newDate: input.from,
+              newDate: input.from || foundTimestamp,
             },
           }); //! END OF PROCEDURE
 
