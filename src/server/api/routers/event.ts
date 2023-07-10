@@ -328,12 +328,26 @@ export const eventRouter = createTRPCRouter({
         });
       } else if (input.exclusionDefinition === "thisAndFuture") {
         if (input.eventExceptionId) {
-          const deleted = await ctx.prisma.eventException.delete({
+          const eventException =
+            await ctx.prisma.eventException.findUniqueOrThrow({
+              where: {
+                id: input.eventExceptionId,
+              },
+              select: {
+                eventMasterId: true,
+              },
+            });
+
+          await ctx.prisma.eventException.deleteMany({
             where: {
               id: input.eventExceptionId,
+              newDate: {
+                gte: input.date,
+              },
             },
           });
-          input.eventMasterId = deleted.eventMasterId;
+
+          input.eventMasterId = eventException.eventMasterId;
         }
 
         const eventMaster = await ctx.prisma.eventMaster.findUnique({
