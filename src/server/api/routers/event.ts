@@ -468,7 +468,7 @@ export const eventRouter = createTRPCRouter({
           const eventException =
             await ctx.prisma.eventException.findFirstOrThrow({
               where: {
-                eventMasterId: input.eventExceptionId,
+                id: input.eventExceptionId,
                 OR: [
                   { newDate: input.selectedTimestamp },
                   { originalDate: input.selectedTimestamp },
