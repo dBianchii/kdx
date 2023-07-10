@@ -505,14 +505,12 @@ export const eventRouter = createTRPCRouter({
         });
 
         const evtMasterRule = rrulestr(eventMaster.rule);
-        const occurences = evtMasterRule.between(
-          eventMaster.DateStart,
+        const foundTimestamp = evtMasterRule.between(
+          input.selectedTimestamp,
           input.selectedTimestamp,
           true
-        );
-        const foundTimestamp = occurences.find((x) =>
-          moment(x).isSame(input.selectedTimestamp)
-        );
+        )[0];
+
         if (!foundTimestamp)
           throw new TRPCError({
             code: "NOT_FOUND",
