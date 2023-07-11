@@ -123,8 +123,8 @@ export const eventRouter = createTRPCRouter({
       });
 
       type CalendarTask = {
-        title: string | null;
-        description: string | null;
+        title: string | undefined;
+        description: string | undefined;
         date: Date;
         rule: string;
       } & (
@@ -150,8 +150,8 @@ export const eventRouter = createTRPCRouter({
           calendarTasks.push({
             eventMasterId: eventMaster.id,
             eventExceptionId: undefined,
-            title: eventMaster.eventInfo.title,
-            description: eventMaster.eventInfo.description,
+            title: eventMaster.eventInfo.title ?? undefined,
+            description: eventMaster.eventInfo.description ?? undefined,
             date: date,
             rule: eventMaster.rule,
           });
@@ -218,9 +218,9 @@ export const eventRouter = createTRPCRouter({
           // Pesquiso dentro do EventExceptions filtrado se tenho algum item com OriginalDate e EventId semelhante
           // Se sim, vejo o que a exceção me pede para fazer e executo
           const foundException = eventExceptions.find(
-            (x) =>
-              x.eventMasterId === calendarTask.eventMasterId &&
-              x.originalDate === calendarTask.date
+            (exception) =>
+              exception.eventMasterId === calendarTask.eventMasterId &&
+              moment(exception.originalDate).isSame(calendarTask.date)
           );
           if (foundException) {
             calendarTask = {

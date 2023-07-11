@@ -106,24 +106,25 @@ export default function EditEventDialog({
 
   const [isFormChanged, setIsFormChanged] = useState(false);
 
-  // useEffect(() => {
-  //   setFrom((prev) =>
-  //     prev.set({
-  //       hour: parseInt(time.split(":")[0] ?? "0"),
-  //       minute: parseInt(time.split(":")[1] ?? "0"),
-  //       second: 0,
-  //       millisecond: 0,
-  //     })
-  //   );
-  //   setUntil((prev) =>
-  //     prev?.set({
-  //       hour: parseInt(time.split(":")[0] ?? "0"),
-  //       minute: parseInt(time.split(":")[1] ?? "0"),
-  //       second: 0,
-  //       millisecond: 0,
-  //     })
-  //   );
-  // }, [from, until, time]);
+  useEffect(() => {
+    setFrom((prev) =>
+      prev.set({
+        hour: parseInt(time.split(":")[0] ?? "0"),
+        minute: parseInt(time.split(":")[1] ?? "0"),
+        second: 0,
+        millisecond: 0,
+      })
+    );
+    // setUntil((prev) =>
+    //   prev?.set({
+    //     hour: parseInt(time.split(":")[0] ?? "0"),
+    //     minute: parseInt(time.split(":")[1] ?? "0"),
+    //     second: 0,
+    //     millisecond: 0,
+    //   })
+    // );
+  }, [from, until, time]);
+
   useEffect(() => {
     if (!allowedEditDefinitions.includes("single"))
       setDefinition("thisAndFuture");
@@ -228,16 +229,28 @@ export default function EditEventDialog({
       ? { eventExceptionId: calendarTask.eventExceptionId }
       : { eventMasterId: calendarTask.eventMasterId };
 
-    // editEvent({
-    //   ...idObj,
-    //   selectedTimestamp: from.toDate(),
-    //   title: title || undefined,
-    //   description: description,
-    //   from: from.toDate(),
-    //   until: until?.toDate(),
-    //   frequency: frequency,
-    //   interval: interval,
-    // });
+    editEvent({
+      ...idObj,
+      selectedTimestamp: defaultState.from.toDate(),
+      title: title !== defaultState.title ? title : undefined,
+      description:
+        description !== defaultState.description ? description : undefined,
+      from: !from.isSame(defaultState.from)
+        ? from
+            .set({
+              hour: parseInt(time.split(":")[0] ?? "0"),
+              minute: parseInt(time.split(":")[1] ?? "0"),
+              second: 0,
+              millisecond: 0,
+            })
+            .toDate()
+        : undefined,
+      until:
+        until && until.isSame(defaultState.until) ? until.toDate() : undefined,
+      frequency: frequency !== defaultState.frequency ? frequency : undefined,
+      interval: interval !== defaultState.interval ? interval : undefined,
+      editDefinition: definition,
+    });
   }
 
   return (
@@ -307,7 +320,9 @@ export default function EditEventDialog({
                 <Input
                   type="time"
                   value={time}
-                  onChange={(e) => setTime(e.target.value)}
+                  onChange={(e) => {
+                    setTime(e.target.value);
+                  }}
                   className="w-26"
                 />
               </div>
