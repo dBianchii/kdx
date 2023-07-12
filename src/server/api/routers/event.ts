@@ -405,17 +405,13 @@ export const eventRouter = createTRPCRouter({
     .input(
       z
         .object({
-          eventMasterId: z.string().cuid(),
-          eventExceptionId: z.string().cuid(),
+          eventMasterId: z.string().optional(),
+          eventExceptionId: z.string().optional(),
 
           selectedTimestamp: z.date(),
 
           title: z.string().optional(),
           description: z.string().optional(),
-        })
-        .partial({
-          eventMasterId: true,
-          eventExceptionId: true,
         })
         .refine(
           (data) => data.eventExceptionId || data.eventMasterId,
