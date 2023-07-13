@@ -86,6 +86,7 @@ export default function EditEventDialog({
       count: RRule.fromString(calendarTask.rule).options.count ?? undefined,
     };
   }, [calendarTask]);
+  console.log(defaultState);
 
   const [title, setTitle] = useState(defaultState.title);
   const [description, setDescription] = useState(defaultState.description);
@@ -231,7 +232,7 @@ export default function EditEventDialog({
 
     editEvent({
       ...idObj,
-      selectedTimestamp: defaultState.from.toDate(),
+      selectedTimestamp: calendarTask.date,
       title: title !== defaultState.title ? title : undefined,
       description:
         description !== defaultState.description ? description : undefined,
@@ -403,8 +404,6 @@ function EditDefinitionDialog({
   allowedDefinitions: ("single" | "thisAndFuture" | "all")[];
   submit: (definition: "single" | "thisAndFuture" | "all") => void;
 }) {
-  const [buttonLoading, setButtonLoading] = useState(false);
-
   return (
     <AlertDialog
       open={open}
@@ -415,7 +414,7 @@ function EditDefinitionDialog({
     >
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Exclude recurrent event</AlertDialogTitle>
+          <AlertDialogTitle>Edit recurrent event</AlertDialogTitle>
           <AlertDialogDescription>
             <div className="my-6">
               <RadioGroup
@@ -478,11 +477,7 @@ function EditDefinitionDialog({
               submit(definition);
             }}
           >
-            {buttonLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <>OK</>
-            )}
+            OK
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

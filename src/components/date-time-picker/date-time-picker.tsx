@@ -15,6 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
 import { Calendar } from "./calendar";
 import { DateField } from "./date-field";
 import { TimeField } from "./time-field";
+import { format } from "date-fns";
 
 export function useForwardedRef<T>(ref: React.ForwardedRef<T>) {
   const innerRef = React.useRef<T>(null);
@@ -44,6 +45,7 @@ const DateTimePicker = React.forwardRef<
   const state = useDatePickerState(props);
   const {
     groupProps,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     fieldProps,
     buttonProps: _buttonProps,
     dialogProps,
@@ -57,6 +59,7 @@ const DateTimePicker = React.forwardRef<
     },
   });
 
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   return (
     <div
       {...groupProps}
@@ -66,17 +69,21 @@ const DateTimePicker = React.forwardRef<
         "flex items-center rounded-md ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
       )}
     >
-      <DateField {...fieldProps} />
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             {...buttonProps}
             variant="outline"
-            className="rounded-l-none"
+            className="rounded-md"
             disabled={props.isDisabled}
             onClick={() => setOpen(true)}
           >
-            <CalendarIcon className="h-5 w-5" />
+            {state.value ? (
+              format(state.value.toDate(timeZone), "PPP 'at' HH:mm")
+            ) : (
+              <span>Pick a date</span>
+            )}
+            <CalendarIcon className="ml-2 h-4 w-4" />
           </Button>
         </PopoverTrigger>
         <PopoverContent ref={contentRef} className="w-full">
