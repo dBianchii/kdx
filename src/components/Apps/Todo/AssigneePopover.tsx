@@ -5,7 +5,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
-import { User } from "@prisma/client";
+import type { User } from "@prisma/client";
 import {
   CommandInput,
   CommandList,
@@ -14,22 +14,52 @@ import {
   Command,
 } from "@ui/command";
 import { useState } from "react";
-import { Button } from "@ui/button";
 
+/**
+ * @description You can optionally input a button to overwrite the default button trigger.
+ */
 export function AssigneePopover({
+  assignedToUserId,
   setAssignedToUserId,
   users,
   children,
 }: {
+  assignedToUserId: string | null;
   setAssignedToUserId: (newUserId: string | null) => void;
   users: User[];
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
 
+  const user = (users ?? []).find((x) => x.id === assignedToUserId);
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      {children}
+      <PopoverTrigger asChild>
+        {children ? (
+          children
+        ) : user ? (
+          <div>
+            <Avatar className="h-6 w-6">
+              <AvatarImage
+                src={user?.image ?? undefined}
+                alt={user?.name ? user.name + " avatar" : ""}
+              />
+              <AvatarFallback>
+                {user?.name &&
+                  user.name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")}
+              </AvatarFallback>
+            </Avatar>
+          </div>
+        ) : (
+          <div>
+            <UserCircleIcon className="h-6 w-6 text-foreground/70" />
+          </div>
+        )}
+      </PopoverTrigger>
       <PopoverContent className="w-300 p-0" side="bottom" align={"start"}>
         <Command>
           <CommandInput placeholder="Assign to user..." />

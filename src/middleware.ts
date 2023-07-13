@@ -1,14 +1,18 @@
-import {
-  NextResponse,
-  type NextFetchEvent,
-  type NextRequest,
-} from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+// Trigger this middleware to run on the `/secret-page` route
+export const config = {
+  matcher: "/testMiddleware",
+  runtime: "experimental-edge",
+};
 
 export function middleware(request: NextRequest) {
-  return NextResponse.json({
-    message: "Hello from the middleware!",
-    city: request.geo?.city,
-    ip: request.ip,
-    url: request.url,
-  });
+  // Extract country. Default to BR if not found.
+  const country = (request.geo && request.geo.country) || "BR";
+  request.nextUrl.pathname = "/signIn";
+
+  console.log(`Visitor from ${country}`);
+  // Rewrite to URL
+  return NextResponse.redirect(request.nextUrl);
 }

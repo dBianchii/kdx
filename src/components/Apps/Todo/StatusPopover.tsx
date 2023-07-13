@@ -1,5 +1,5 @@
 import type { Status } from "@prisma/client";
-import { Popover, PopoverContent } from "@ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
 import {
   CommandInput,
   CommandList,
@@ -16,23 +16,34 @@ import {
   CircleSlash,
 } from "lucide-react";
 import { cn } from "@/components/ui/lib/utils";
+import { Button } from "@/components/ui/button";
 
 /**
- * To use this component, make sure you wrap it around a PopoverTrigger component.
- * To activate the StatusPopover component from within a Context Menu or Dropdown Menu, you must encase the Context Menu or Dropdown Menu component on the StatusPopover component.
+ * @description You can optionally input a button to overwrite the default button trigger.
  */
 export default function StatusPopover({
+  status,
   setStatus,
   children,
 }: {
+  status: Status;
   setStatus: (status: Status) => void;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  const statusTxt = StatusToText(status);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      {children}
+      <PopoverTrigger asChild>
+        {children ?? (
+          <Button variant="outline" size="sm">
+            <StatusIcon status={status} className={"mr-2"} />
+            {statusTxt}
+            <span className="sr-only">Open status popover</span>
+          </Button>
+        )}
+      </PopoverTrigger>
       <PopoverContent className="w-300 p-0" side="bottom" align={"start"}>
         <Command>
           <CommandInput placeholder="Change status..." />

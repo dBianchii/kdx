@@ -18,12 +18,20 @@ const prisma = new PrismaClient();
 
   const apps = [
     {
-      id: "clhb5iple000008lcgd0zem9n",
+      id: "clj2117860007skypdpzj0k1i",
       name: "Todo",
       description: "Todo app",
       subscriptionCost: 0,
       devPartnerId: kdxPartnerId,
       urlApp: "/todo",
+    },
+    {
+      id: "clj2117860009skyp5e613fih",
+      name: "Kodix Care",
+      description: "Kodix Care app",
+      subscriptionCost: 0,
+      devPartnerId: kdxPartnerId,
+      urlApp: "/kodixCare",
     },
   ];
 

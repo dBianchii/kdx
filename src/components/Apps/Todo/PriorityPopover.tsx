@@ -1,4 +1,4 @@
-import { Popover, PopoverContent } from "@ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
 import {
   CommandInput,
   CommandList,
@@ -9,11 +9,17 @@ import {
 import { Signal, SignalHigh, SignalLow, SignalMedium } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/components/ui/lib/utils";
+import { Button } from "@/components/ui/button";
 
+/**
+ * @description You can optionally input a button to overwrite the default button trigger.
+ */
 export function PriorityPopover({
+  priority,
   setPriority,
   children,
 }: {
+  priority: Priority;
   setPriority: (priority: Priority) => void;
   children?: React.ReactNode;
 }) {
@@ -22,7 +28,15 @@ export function PriorityPopover({
   const prioritiesArr: Priority[] = [0, 1, 2, 3];
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      {children}
+      <PopoverTrigger>
+        {children ?? (
+          <Button variant="ghost" size="sm">
+            <PriorityIcon priority={priority} className="mr-2" />
+            {PriorityToTxt(priority)}
+            <span className="sr-only">Open priority popover</span>
+          </Button>
+        )}
+      </PopoverTrigger>
       <PopoverContent className="w-300 p-0" side="bottom" align={"start"}>
         <Command>
           <CommandInput placeholder="Change priority..." />

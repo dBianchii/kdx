@@ -2,8 +2,8 @@ import { Separator } from "@ui/separator";
 import { Button } from "@ui/button";
 import { format } from "date-fns";
 import { H1 } from "@ui/typography";
-import type { Status, User } from "@prisma/client";
-import { CalendarIcon, Plus, X } from "lucide-react";
+import type { Status } from "@prisma/client";
+import { Plus, X } from "lucide-react";
 import { api } from "@/utils/api";
 import {
   DialogHeader,
@@ -17,11 +17,7 @@ import {
 import { Input } from "@ui/input";
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { PopoverTrigger } from "@/components/ui/popover";
 import {
   type Priority,
   PriorityIcon,
@@ -31,25 +27,16 @@ import {
 import {
   DatePickerIcon,
   DatePickerWithPresets,
-} from "@/components/Apps/Todo/DatePickerWithPresets";
-import {
-  Command,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
+} from "@/components/DatePickerWithPresets";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
 import { DataTable } from "@/components/Apps/Todo/data-table";
 //import { columns } from "../../../components/Apps/Todo/columns";
-import StatusPopover, {
-  StatusIcon,
-  StatusToText,
-} from "@/components/Apps/Todo/StatusPopover";
+import StatusPopover from "@/components/Apps/Todo/StatusPopover";
 
 import { columns } from "@/components/Apps/Todo/columns";
 import { AssigneePopover } from "@/components/Apps/Todo/AssigneePopover";
+import { appRouter } from "@/server/api/root";
 
 export default function Todo() {
   const { data } = api.todo.getAllForLoggedUser.useQuery();
@@ -95,13 +82,12 @@ export function CreateTaskDialogButton() {
 
   const [open, setOpen] = useState(false);
 
-  const statusTxt = StatusToText(status);
   const user = (workspace?.users ?? []).find((x) => x.id === assignedToUserId);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="xs">
+        <Button variant="outline" size="sm">
           <Plus className="mr-2 h-4 w-4" />
           Create Task
         </Button>
@@ -114,7 +100,7 @@ export function CreateTaskDialogButton() {
           <Input
             className="my-2 border-none"
             type="text"
-            placeholder="Task title..."
+            placeholder="Event title..."
             onChange={(e) => setTitle(e.target.value)}
           ></Input>
           <Textarea
@@ -123,18 +109,10 @@ export function CreateTaskDialogButton() {
             onChange={(e) => setDescription(e.target.value)}
           ></Textarea>
           <div className="flex flex-row gap-1">
-            <StatusPopover setStatus={setStatus}>
+            <StatusPopover setStatus={setStatus} status={status} />
+            <PriorityPopover priority={priority} setPriority={setPriority}>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="xs">
-                  <StatusIcon status={status} className={"mr-2"} />
-                  {statusTxt}
-                  <span className="sr-only">Open status popover</span>
-                </Button>
-              </PopoverTrigger>
-            </StatusPopover>
-            <PriorityPopover setPriority={setPriority}>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="xs">
+                <Button variant="outline" size="sm">
                   <PriorityIcon priority={priority} className={"mr-2"} />
                   {PriorityToTxt(priority)}
                   <span className="sr-only">Open priority popover</span>
@@ -142,34 +120,33 @@ export function CreateTaskDialogButton() {
               </PopoverTrigger>
             </PriorityPopover>
             <AssigneePopover
+              assignedToUserId={assignedToUserId}
               setAssignedToUserId={setAssignedToUserId}
               users={workspace?.users ?? []}
             >
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="xs">
-                  <span className="sr-only">Open assign user popover</span>
+              <Button variant="outline" size="sm">
+                <span className="sr-only">Open assign user popover</span>
 
-                  {user ? (
-                    <>
-                      <Avatar className="mr-2 h-4 w-4">
-                        <AvatarImage
-                          src={user.image ?? ""}
-                          alt={user.name ?? "" + " avatar"}
-                        />
-                        <AvatarFallback>
-                          <UserCircleIcon />
-                        </AvatarFallback>
-                      </Avatar>
-                      {user.name}
-                    </>
-                  ) : (
-                    <>
-                      <UserCircleIcon className="mr-2 h-4 w-4" />
-                      Assignee
-                    </>
-                  )}
-                </Button>
-              </PopoverTrigger>
+                {user ? (
+                  <>
+                    <Avatar className="mr-2 h-4 w-4">
+                      <AvatarImage
+                        src={user.image ?? ""}
+                        alt={user.name ?? "" + " avatar"}
+                      />
+                      <AvatarFallback>
+                        <UserCircleIcon />
+                      </AvatarFallback>
+                    </Avatar>
+                    {user.name}
+                  </>
+                ) : (
+                  <>
+                    <UserCircleIcon className="mr-2 h-4 w-4" />
+                    Assignee
+                  </>
+                )}
+              </Button>
             </AssigneePopover>
             <DatePickerWithPresets date={dueDate} setDate={setDueDate}>
               <PopoverTrigger asChild>
@@ -178,7 +155,7 @@ export function CreateTaskDialogButton() {
                   className={
                     !dueDate ? "text-muted-foreground" : "text-foreground"
                   }
-                  size="xs"
+                  size="sm"
                 >
                   <DatePickerIcon date={dueDate} className="mr-2 h-4 w-4" />
                   {dueDate ? format(dueDate, "PPP") : "Pick a date"}
@@ -198,7 +175,7 @@ export function CreateTaskDialogButton() {
           </div>
         </DialogDescription>
         <DialogFooter>
-          <Button type="submit" size="xs" onClick={handleCreateTask}>
+          <Button type="submit" size="sm" onClick={handleCreateTask}>
             Create task
           </Button>
         </DialogFooter>

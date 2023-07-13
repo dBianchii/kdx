@@ -5,7 +5,8 @@ import { Avatar, AvatarImage, AvatarFallback } from "@ui/avatar";
 import { type inferRouterOutputs } from "@trpc/server";
 
 import { type AppRouter } from "@/server/api/root";
-import { createColumnHelper } from "@tanstack/react-table";
+
+import { RowData, createColumnHelper } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
 import StatusPopover, { StatusIcon, StatusToText } from "./StatusPopover";
@@ -19,15 +20,45 @@ import {
   PriorityPopover,
   PriorityToTxt,
 } from "./PriorityPopover";
-import { DatePickerIcon, DatePickerWithPresets } from "./DatePickerWithPresets";
+import {
+  DatePickerIcon,
+  DatePickerWithPresets,
+} from "@/components/DatePickerWithPresets";
 import { AssigneePopover } from "./AssigneePopover";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ZodNullable } from "zod";
 
 type RouterOutput = inferRouterOutputs<AppRouter>;
 export type TodoColumn = RouterOutput["todo"]["getAllForLoggedUser"][number];
 const columnHelper = createColumnHelper<TodoColumn>();
+type workspace = RouterOutput["workspace"]["getActiveWorkspace"];
 
+declare module "@tanstack/react-table" {
+  interface TableMeta<TData extends RowData> {
+    workspace: workspace | undefined;
+  }
+}
 export const columns = [
+  columnHelper.display({
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={table.getIsAllPageRowsSelected()}
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  }),
   columnHelper.accessor("priority", {
     cell: function Cell(info) {
       const [priority, setPriority] = useState<Priority>(0); //added "0" Just to make TS happy
@@ -71,14 +102,15 @@ export const columns = [
 
       return (
         <div className="text-left">
-          <PriorityPopover setPriority={handlePriorityChange}>
-            <PopoverTrigger>
-              <Button variant="ghost" size="xs">
-                <PriorityIcon priority={priority} className="mr-2" />
-                {PriorityToTxt(priority)}
-                <span className="sr-only">Open priority popover</span>
-              </Button>
-            </PopoverTrigger>
+          <PriorityPopover
+            priority={priority}
+            setPriority={handlePriorityChange}
+          >
+            <Button variant="ghost" size="sm">
+              <PriorityIcon priority={priority} className="mr-2" />
+              {PriorityToTxt(priority)}
+              <span className="sr-only">Open priority popover</span>
+            </Button>
           </PriorityPopover>
         </div>
       );
@@ -128,14 +160,12 @@ export const columns = [
       const statusTxt = StatusToText(status);
 
       return (
-        <StatusPopover setStatus={handleStatusChange}>
-          <PopoverTrigger>
-            <Button variant="ghost" size="xs">
-              <StatusIcon status={status} className="mr-2" />
-              {statusTxt}
-              <span className="sr-only">Open status popover</span>
-            </Button>
-          </PopoverTrigger>
+        <StatusPopover setStatus={handleStatusChange} status={status}>
+          <Button variant="ghost" size="sm">
+            <StatusIcon status={status} className={"mr-2"} />
+            {statusTxt}
+            <span className="sr-only">Open status popover</span>
+          </Button>
         </StatusPopover>
       );
     },
@@ -172,7 +202,7 @@ export const columns = [
             description: "Please try again later",
           });
           // If the mutation fails, use the context-value from onMutate
-          setDueDate(ctx?.prevData);
+          setDueDate(ctx?.prevData ?? undefined);
         },
       });
 
@@ -182,28 +212,7 @@ export const columns = [
 
       return (
         <div className="text-right">
-          <DatePickerWithPresets date={dueDate} setDate={handleDueDateChange}>
-            <PopoverTrigger>
-              <Button variant="ghost" size="xs">
-                <DatePickerIcon date={dueDate} className="mr-2" />
-                {dueDate
-                  ? format(new Date(dueDate.toString() ?? ""), "PPP").split(
-                      ","
-                    )[0]
-                  : "Pick a date"}
-                {dueDate && (
-                  <span
-                    onClick={() => {
-                      handleDueDateChange(null);
-                    }}
-                    className="ml-2 rounded-full transition-colors hover:bg-primary/90 hover:text-background"
-                  >
-                    <X className="h-4 w-4 " />
-                  </span>
-                )}
-              </Button>
-            </PopoverTrigger>
-          </DatePickerWithPresets>
+          <DatePickerWithPresets date={dueDate} setDate={handleDueDateChange} />
         </div>
       );
     },
@@ -216,8 +225,6 @@ export const columns = [
       useEffect(() => {
         if (value) setAssignedToUserId(value.id);
       }, [value]);
-
-      const { data: workspace } = api.workspace.getActiveWorkspace.useQuery();
 
       const ctx = api.useContext();
       const { mutate: updateTodo } = api.todo.update.useMutation({
@@ -250,40 +257,14 @@ export const columns = [
           assignedToUserId: newAssignedToUserId,
         });
       }
-      const user = (workspace?.users ?? []).find(
-        (x) => x.id === assignedToUserId
-      );
 
       return (
         <div className="text-right">
           <AssigneePopover
+            assignedToUserId={assignedToUserId}
             setAssignedToUserId={handleAssignedToUserChange}
-            users={workspace?.users ?? []}
-          >
-            <PopoverTrigger asChild>
-              {user ? (
-                <div>
-                  <Avatar className="h-6 w-6">
-                    <AvatarImage
-                      src={user.image ?? undefined}
-                      alt={user.name ? user.name + " avatar" : ""}
-                    />
-                    <AvatarFallback>
-                      {user.name &&
-                        user.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
-              ) : (
-                <div>
-                  <UserCircleIcon className="h-6 w-6 text-foreground/70" />
-                </div>
-              )}
-            </PopoverTrigger>
-          </AssigneePopover>
+            users={info.table.options.meta?.workspace?.users ?? []}
+          />
         </div>
       );
     },
@@ -318,7 +299,7 @@ export const columns = [
   //     const Icon = StatusIcon(currentStatus, "mr-2");
   //     const statusTxt = StatusToText(currentStatus);
   //     return (
-  //       <Button variant="outline" size="xs">
+  //       <Button variant="outline" size="sm">
   //         {Icon} {"  " + statusTxt}
   //         <span className="sr-only">Open status popover</span>
   //       </Button>
@@ -341,7 +322,7 @@ export const columns = [
   //     )[0]; //This format should be like 'May 11th'
   //     return (
   //       <div className="text-right">
-  //         <Button variant="ghost" size="xs">
+  //         <Button variant="ghost" size="sm">
   //           {<Calendar className="mr-2 h-4 w-4" />}
   //           <span className="">{formatedDate}</span>
   //         </Button>

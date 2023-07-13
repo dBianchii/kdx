@@ -12,8 +12,8 @@ import {
   Command,
 } from "@ui/command";
 import { Calendar } from "@ui/calendar";
-import { addDays } from "date-fns";
-import { CalendarIcon, ChevronDown } from "lucide-react";
+import { addDays, format } from "date-fns";
+import { CalendarIcon, ChevronDown, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/components/ui/lib/utils";
 
@@ -26,7 +26,7 @@ export function DatePickerWithPresets({
   setDate:
     | React.Dispatch<React.SetStateAction<Date | undefined>>
     | ((newDate: Date | undefined) => void);
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }) {
   const commands = [
     {
@@ -59,7 +59,26 @@ export function DatePickerWithPresets({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      {children}
+      <PopoverTrigger>
+        {children ?? (
+          <Button variant="ghost" size="sm">
+            <DatePickerIcon date={date} className="mr-2" />
+            {date
+              ? format(new Date(date.toString() ?? ""), "PPP").split(",")[0]
+              : "Pick a date"}
+            {date && (
+              <span
+                onClick={() => {
+                  setDate(undefined);
+                }}
+                className="ml-2 rounded-full transition-colors hover:bg-primary/90 hover:text-background"
+              >
+                <X className="h-4 w-4 " />
+              </span>
+            )}
+          </Button>
+        )}
+      </PopoverTrigger>
       <PopoverContent className="flex flex-col space-y-2 p-2" align="start">
         <Popover>
           <PopoverTrigger>
@@ -94,7 +113,12 @@ export function DatePickerWithPresets({
           </PopoverContent>
         </Popover>
         <div className="rounded-md border">
-          <Calendar mode="single" selected={date} onSelect={setDate} />
+          <Calendar
+            mode="single"
+            selected={date}
+            onSelect={setDate}
+            initialFocus
+          />
         </div>
       </PopoverContent>
     </Popover>

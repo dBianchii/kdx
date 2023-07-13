@@ -15,28 +15,63 @@ datasource db {
   relationMode = "prisma"
 }
 
+model App_Roles {
+  id              String  @id @default(cuid())
+  appId           String
+  roleName        String
+  roleDescription String?
+  maxRoleUsers    Int     @default(0)
+  minRoleUsers    Int     @default(0)
+
+  app App @relation(fields: [appId], references: [id])
+
+  @@index([appId])
+}
+
+model AppWorkspaceConfig {
+  id         String @id @default(cuid())
+  Parameters String @db.MediumText // Para qualquer configuração 
+
+  AppId String
+  app   App    @relation("AppConfig", fields: [AppId], references: [id])
+
+  WorkspaceId String
+  workspace   Workspace @relation("WorkspaceConfig", fields: [WorkspaceId], references: [id])
+
+  @@unique([AppId, WorkspaceId])
+  @@index([AppId])
+  @@index([WorkspaceId])
+  @@map("App_Workspace_Config")
+}
+
 model Workspace {
-  id          String   @id @default(cuid())
+  id          String        @id @default(cuid())
   name        String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  users       User[]   @relation("UserWorkspace")
-  activeUsers User[]   @relation("UserActiveWorkspace")
-  activeApps  App[]    @relation("AppWorkspace")
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  users       User[]        @relation("UserWorkspace")
+  activeUsers User[]        @relation("UserActiveWorkspace")
+  activeApps  App[]         @relation("AppWorkspace")
   Todo        Todo[]
+  EventMaster EventMaster[]
+
+  workspaceConfigs AppWorkspaceConfig[] @relation("WorkspaceConfig")
 }
 
 model App {
-  id               String      @id @default(cuid())
-  name             String
-  description      String
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
-  subscriptionCost Decimal
-  activeWorkspaces Workspace[] @relation("AppWorkspace")
-  idpartnerDev     DevPartner  @relation(fields: [devPartnerId], references: [id])
-  devPartnerId     String
-  urlApp           String      @unique
+  id                  String               @id @default(cuid())
+  name                String
+  description         String
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  subscriptionCost    Decimal
+  activeWorkspaces    Workspace[]          @relation("AppWorkspace")
+  idpartnerDev        DevPartner           @relation(fields: [devPartnerId], references: [id])
+  devPartnerId        String
+  urlApp              String               @unique
+  appWorkspaceConfigs AppWorkspaceConfig[] @relation("AppConfig")
+
+  appRoles App_Roles[]
 
   @@index([devPartnerId])
 }
@@ -87,6 +122,82 @@ model Todo {
   @@index([assignedToUserId])
 }
 
+model EventMaster {
+  id        String    @id @default(cuid())
+  rule      String
+  DateStart DateTime
+  DateUntil DateTime?
+
+  eventInfo   EventInfo @relation(fields: [eventInfoId], references: [id])
+  eventInfoId String
+
+  EventExceptions    EventException[]
+  EventCancellations EventCancellation[]
+  EventDone          EventDone[]
+
+  Workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  workspaceId String
+
+  @@index([workspaceId])
+  @@index([eventInfoId])
+}
+
+model EventInfo {
+  id          String  @id @default(cuid())
+  title       String?
+  description String?
+
+  EventException EventException[]
+  EventDone      EventDone[]
+  EventMaster    EventMaster[]
+}
+
+model EventException {
+  id           String   @id @default(cuid())
+  originalDate DateTime
+  newDate      DateTime
+
+  EventMaster   EventMaster @relation(fields: [eventMasterId], references: [id])
+  eventMasterId String
+
+  EventInfo   EventInfo? @relation(fields: [eventInfoId], references: [id])
+  eventInfoId String?
+
+  @@index([eventMasterId])
+  @@index([eventInfoId])
+}
+
+model EventCancellation {
+  id           String   @id @default(cuid())
+  originalDate DateTime
+
+  EventMaster   EventMaster @relation(fields: [eventMasterId], references: [id])
+  eventMasterId String
+
+  @@index([eventMasterId])
+}
+
+model EventDone {
+  id           String   @id @default(cuid())
+  eventDate    DateTime
+  registerDate DateTime @default(now())
+  done         Boolean
+  details      String?
+
+  doneBy User   @relation(fields: [userId], references: [id])
+  userId String
+
+  EventMaster   EventMaster @relation(fields: [eventMasterId], references: [id])
+  eventMasterId String
+
+  EventInfo   EventInfo @relation(fields: [eventInfoId], references: [id])
+  eventInfoId String
+
+  @@index([eventMasterId])
+  @@index([userId])
+  @@index([eventInfoId])
+}
+
 // Necessary for Next auth
 model Account {
   id                String  @id @default(cuid())
@@ -129,6 +240,7 @@ model User {
   Todo              Todo[]
   activeWorkspaceId String?     @map("activeWorkspaceId")
   activeWorkspace   Workspace?  @relation("UserActiveWorkspace", fields: [activeWorkspaceId], references: [id])
+  EventDone         EventDone[]
 
   @@index([activeWorkspaceId])
 }
